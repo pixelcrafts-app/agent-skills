@@ -101,12 +101,13 @@ Write `.claude/verify-state.json`:
       "fail_count": "number",
       "findings": [
         {
-          "rule": "string — e.g. craft-guide §4.2",
+          "rule": "string — e.g. craft-guide §4.2 or '<tool-name>:<check-type>'",
           "file": "path",
           "line": "number | null",
           "verdict": "PASS | FAIL | N_A | INFO | REVIEW | CONFLICT",
-          "evidence": "string — direct quote or 'no occurrence'",
-          "fix": "string | null — only on FAIL"
+          "evidence": "string — direct quote, tool output excerpt, or 'no occurrence'",
+          "fix": "string | null — only on FAIL",
+          "source": "tool | ai_judgment"
         }
       ]
     }
@@ -300,14 +301,45 @@ Show the plan, then ask *"Proceed?"* The user may adjust scope, drop dimensions,
 
 **The key discipline: between batches, write progress to task metadata (via `TaskUpdate`), not into the running conversation.** Findings that later phases need must live in task metadata, not as quoted evidence in intermediate messages.
 
+### 4.0 — Tool-first pass (runs once per verify-changes invocation, before any batch)
+
+Before any AI judgment, run the project's own tools. These produce binary verdicts that do not require interpretation — they are the ground truth for what they cover.
+
+**Step A — detect available tools** from project manifests:
+
+1. Read the project manifest (e.g. `package.json`, `pubspec.yaml`, `pyproject.toml`, `Makefile`, etc. — whichever exists at the project root)
+2. Look for configured tool commands in the manifest's scripts/tasks section: type-check, lint, analyze, test
+3. If no scripts section: check for standard tool binaries that the manifest's dependencies imply
+4. Run what the project has configured — not what you assume is installed
+
+Do not hardcode tool names from a known stack list. Detect from what the project declares.
+
+**Step B — run each detected tool, scoped to changed files**
+
+Do NOT run the full test suite. Scope to changed files only:
+- Type checker / analyzer: the command the project's manifest declares for type-checking or static analysis
+- Linter: the command the project's manifest declares for linting, scoped to changed files
+- Tests: only if a test file exists that maps directly to a changed file — use the project's configured test command, scoped to that file
+
+**Step C — record tool results in verify-state.json with `source: "tool"`**
+
+For each tool run:
+- Non-zero exit AND tool started cleanly → record findings as `source: "tool"`, verdict `FAIL`, evidence = tool output excerpt (first 5 errors max)
+- Zero exit → record as `source: "tool"`, verdict `PASS`, evidence = "tool passed: <command>"
+- Tool not found OR environment error (missing env vars, missing binary) → skip silently. Do not record a finding. Do not fail verification. Log: "tool not available: <command> — skipping"
+
+**Precedence rule:** `source: "tool"` verdicts are authoritative. If a tool records `FAIL` for a file, AI judgment cannot override it to `PASS` for the same concern. If a tool records `PASS`, AI still applies judgment for what the tool cannot cover (architecture, intent, design quality, rule compliance beyond syntax).
+
+---
+
 ### 4.1 — Per-batch loop
 
 For each batch:
 
-1. **Check verify-state.json before starting** — read the flat `findings` array. If any `(rule, file)` pair in this batch is already recorded with a non-`in_progress` verdict, skip it and record `N_A: already verified in batch <id>`. This prevents duplicate work when batches overlap or when resuming a run.
+1. **Check verify-state.json before starting** — read the flat `findings` array. If any `(rule, file)` pair in this batch is already recorded by a tool (`source: "tool"`), skip that concern — the tool verdict is final. For AI-judgment findings already recorded, also skip. This prevents duplicate work.
 2. **Mark batch tasks in_progress** via TaskUpdate
 3. **Load only what's needed** — read the files in this batch, load only the standards skill relevant to this batch's dimension. Don't pre-load the whole pack.
-4. **Iterate rule-by-rule** — for every rule in the loaded dimension's SKILL.md, produce one record per (rule × file):
+4. **Iterate rule-by-rule — only rules tools cannot cover** — for every rule in the loaded dimension's SKILL.md, produce one record per (rule × file):
    - **Rule ID or heading** — the section/rule identifier from the skill (e.g. `craft-guide §4.2` or `nestjs — controller split`). Never collapse multiple rules into one record.
    - **Evidence** — a direct quote from the file with `path:line`, or the literal string `no occurrence` if the rule does not apply to anything in this file.
    - **Verdict** — exactly one of `PASS`, `FAIL`, `N_A`, `INFO`, `REVIEW`, or `CONFLICT` — see the Verdict types section for definitions. `N_A` **requires** a one-line reason (e.g. "file has no color tokens — rule about color harmony doesn't apply"). Bare `N_A` without reason is invalid and must be re-run.

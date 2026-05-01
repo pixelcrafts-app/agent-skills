@@ -83,18 +83,24 @@ deliverables:
     description: "Short statement of what will exist when this is done"
     files:
       - path/to/file.ts
-    verification: "grep -n 'LoadingState' path/to/file.ts"
+    verification: "Bash: <compile or type-check command> --noEmit"
   - id: D2
     description: "..."
     files:
       - path/to/other.ts
-    verification: "Bash: <test runner> <test path> | grep '0 failed'"
+    verification: "Bash: <test runner> <test-file-path>"
+  - id: D3
+    description: "Pattern not covered by compiler or tests"
+    files:
+      - path/to/other.ts
+    verification: "grep -n '<pattern>' path/to/file"
 scope_boundary: "loading state only — auth layer not in scope for this task"
 -->
 ```
 
 Rules for the plan block:
-- Every deliverable must have a `verification:` field containing a runnable tool command — Bash, grep, or Read with a specific pattern to match. If a verification command cannot be written, the deliverable is too vague — split or restate it first.
+- Every deliverable must have a `verification:` field. **Priority order:** (1) Bash tool command that produces a binary exit code — compile, type-check, scoped test run. (2) grep or Read only for concerns that no available tool covers. Never use grep when a compiler or linter would catch the same thing — the tool verdict is more reliable.
+- If no tool command can be written and grep cannot verify it either, the deliverable is too vague — split or restate it first.
 - `scope_boundary` must state what is explicitly NOT in scope. "Everything else" is not a boundary — name the specific areas excluded.
 - The plan block is the contract Phase 1 uses. Do not restate it in prose after emitting it.
 
