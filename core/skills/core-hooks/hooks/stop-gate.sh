@@ -62,6 +62,19 @@ while IFS= read -r PACK; do
   fi
 done <<< "$PACKS"
 
+# Check verify-state.json — block if verification is in-progress or has tool-sourced FAILs
+VERIFY_STATE="$PROJECT_DIR/.claude/verify-state.json"
+if [ -f "$VERIFY_STATE" ]; then
+  VS_STATUS=$(jq -r '.status // ""' "$VERIFY_STATE" 2>/dev/null)
+  if [ "$VS_STATUS" = "in_progress" ]; then
+    MISSING="${MISSING}- [verify-state] Verification is still in_progress. Run \`core-standards:verify-changes\` to completion before ending the turn.\n"
+  fi
+  TOOL_FAILS=$(jq -r '[.findings[]? | select(.source == "tool" and .verdict == "FAIL") | "  \(.rule): \(.evidence)"] | join("\n")' "$VERIFY_STATE" 2>/dev/null)
+  if [ -n "$TOOL_FAILS" ]; then
+    MISSING="${MISSING}- [verify-state] Tool-verified FAILs remain unresolved:\n$TOOL_FAILS\n"
+  fi
+fi
+
 if [ -n "$MISSING" ]; then
   {
     printf 'Cannot end turn — mandatory gates unmet:\n\n'

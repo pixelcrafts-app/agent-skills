@@ -51,7 +51,7 @@ When no files have been read — new session, new task, autonomous mode — run 
 2. Read that file and the files it directly imports
 3. Identify the stack from file extensions and package manifests — do not assume or name one before reading
 4. Locate one working example of the same pattern the task requires and read it
-5. Check for `.claude/craft.json` at the project root. If absent: detect stacks from file extensions and package manifests, generate a draft craft.json, and note it in the plan block. Do not block work if the user skips config setup.
+5. Check for `.claude/craft.json` and `.claude/enforcement.json` at the project root. If either is absent: detect stacks from file extensions and package manifests, generate draft files, and note them in the plan block. Do not block work if the user skips config setup. enforcement.json draft should list the packs that match detected stacks — the user confirms before writing.
 6. Only after steps 1–5: proceed to the planning steps below
 
 Without completing discovery, any plan produced is fabrication.

@@ -38,7 +38,7 @@ A stack command (e.g. `/web-standards:premium-check`, `/flutter-standards:pre-sh
 ```
 verify-changes brief:
   scope: <file | folder | "uncommitted" | "last N commits" | "$ARGUMENTS">
-  dimensions: [<skill-name>, <skill-name>, ...]   # e.g. [craft-guide], [craft-guide §13], [ALL web]
+  dimensions: [<skill-name>, <skill-name>, ...]   # e.g. [craft-guide], [craft-guide:theme-consistency], [ALL]
   depth: <direct | direct+consumers | full-ripple>
   fix: <yes | no>          # if yes, Phase 6 runs; if no, stop after Phase 5
   source: <caller name>    # e.g. "web-standards:premium-check"
@@ -48,7 +48,7 @@ Treat every field as authoritative. Do not re-prompt. Echo the brief back once a
 
 If the brief is malformed (missing a required field, unknown dimension name), fall back to interactive mode — ask the user to fix or clarify. Don't guess.
 
-**Dimension scoping.** A dimension may be a whole skill (`craft-guide`) or a subset (`craft-guide §13`, `craft-guide §9.1-§9.5`). When scoped, iterate only the matching rule IDs from that skill's SKILL.md — not the whole file. This is how `theme-audit` becomes "craft-guide §13 only" without duplicating §13's rules.
+**Dimension scoping.** A dimension may be a whole skill (`craft-guide`) or a named subset (`craft-guide:theme-consistency`, `craft-guide:color-strategy`). When scoped, match the named section heading in that skill's SKILL.md — not the whole file. Rules are identified by their heading name, not by position number. This is how `theme-audit` becomes "craft-guide:theme-consistency only" without duplicating those rules. If the caller references a rule by a positional number (§13, §4.2), treat it as legacy notation — look up the section by position and use its heading name going forward.
 
 ---
 
@@ -101,7 +101,7 @@ Write `.claude/verify-state.json`:
       "fail_count": "number",
       "findings": [
         {
-          "rule": "string — e.g. craft-guide §4.2 or '<tool-name>:<check-type>'",
+          "rule": "string — e.g. craft-guide:touch-target or '<tool-name>:<check-type>'",
           "file": "path",
           "line": "number | null",
           "verdict": "PASS | FAIL | N_A | INFO | REVIEW | CONFLICT",
@@ -340,7 +340,7 @@ For each batch:
 2. **Mark batch tasks in_progress** via TaskUpdate
 3. **Load only what's needed** — read the files in this batch, load only the standards skill relevant to this batch's dimension. Don't pre-load the whole pack.
 4. **Iterate rule-by-rule — only rules tools cannot cover** — for every rule in the loaded dimension's SKILL.md, produce one record per (rule × file):
-   - **Rule ID or heading** — the section/rule identifier from the skill (e.g. `craft-guide §4.2` or `nestjs — controller split`). Never collapse multiple rules into one record.
+   - **Rule name** — the section heading from the skill (e.g. `craft-guide:touch-target`, `api-design:controller-split`). Use the heading as the stable identifier. Never collapse multiple rules into one record. Never use positional numbers (§4.2) — names survive skill edits, numbers do not.
    - **Evidence** — a direct quote from the file with `path:line`, or the literal string `no occurrence` if the rule does not apply to anything in this file.
    - **Verdict** — exactly one of `PASS`, `FAIL`, `N_A`, `INFO`, `REVIEW`, or `CONFLICT` — see the Verdict types section for definitions. `N_A` **requires** a one-line reason (e.g. "file has no color tokens — rule about color harmony doesn't apply"). Bare `N_A` without reason is invalid and must be re-run.
    - **Suggested fix** — only on `FAIL`. One line. The minimum change that resolves the rule.
@@ -401,7 +401,14 @@ After all batches complete (or stopped):
 1. **Read `.claude/verify-state.json` first** — this is the authoritative evidence trail. All batch findings with `file:line` evidence are here. Use this as the primary source for the report.
 2. Call `TaskList` to cross-reference completion status. If any task shows `completed` but has no corresponding batch in verify-state.json — flag it as `unverified: state file missing` in the report.
 3. For critical or consumer-break failures: `TaskGet` to confirm the failure details match what is in verify-state.json. Discrepancies between task metadata and the state file indicate a write failure — surface it: `WARN: task <id> metadata conflicts with verify-state.json — manual review required`.
-4. **Mark verify-state.json as completed**: update `status` to `completed` and `completed_at` to ISO timestamp. This prevents Phase 0 from resuming a finished run.
+4. **Compute tool vs AI divergences** — scan verify-state.json findings and group by (rule, file):
+   - `source: "tool"` FAIL + `source: "ai_judgment"` PASS for same concern → AI blindspot (tool caught something AI missed)
+   - `source: "tool"` PASS + `source: "ai_judgment"` FAIL for same concern → potential AI false positive (tool says fine, AI disagrees — surface for human judgment)
+   - Both agree → high-confidence finding
+
+   Surface these in the report. Over time, systematic patterns (AI always flags X that tools always pass) identify rules where AI judgment adds no value.
+
+5. **Mark verify-state.json as completed**: update `status` to `completed` and `completed_at` to ISO timestamp. This prevents Phase 0 from resuming a finished run.
 
 Then produce:
 
@@ -427,6 +434,11 @@ Consumer impact:
 
 Unverified / skipped:
   [any task that could not be run + reason]
+
+Divergences (signal for calibration):
+  AI blindspots  — tool FAIL, AI missed: [rule:file pairs]
+  AI false positives — tool PASS, AI flagged: [rule:file pairs]
+  High confidence  — tool + AI agree: [count]
 
 Verdict:
   - 0 critical + 0 consumer-break → SAFE TO COMMIT
@@ -466,6 +478,6 @@ Every rule evaluation produces exactly one verdict:
 | `REVIEW` | Judgment required | Rule requires human decision — Claude cannot determine PASS or FAIL objectively. Surface with question. |
 | `CONFLICT` | Two rules contradict | State both rules, state the conflict. Do not resolve silently. User decides. |
 
-**Precedence when rules conflict:** stack-specific rules override universal rules for stack-specific matters. Universal rules (core-standards:rules §1 Security, §1.3 auth errors) override stack rules when the conflict involves security or secrets.
+**Precedence when rules conflict:** stack-specific rules override universal rules for stack-specific matters. Universal rules (core-standards:universal-rules:security, core-standards:universal-rules:auth-errors) override stack rules when the conflict involves security or secrets.
 
 **Guides vs Rules:** rules in a skill's `RULES` section produce PASS/FAIL/N_A. Content in a skill's `GUIDES` section produces INFO only — never FAIL. Content in a skill's `SUGGESTIONS` section is never audited.

@@ -9,7 +9,7 @@ Check that design tokens exist first — read `design-tokens.md`, or scan `tailw
 ```
 verify-changes brief:
   scope: $ARGUMENTS or "app/ + components/"
-  dimensions: [craft-guide §13, craft-guide §1.5, craft-guide §11.3, craft-guide §11.5, craft-guide §12.7, craft-guide §12.8, craft-guide §12.9]
+  dimensions: [craft-guide:theme-system, craft-guide:contrast-dark-mode, craft-guide:selection-styling, craft-guide:caret-color, craft-guide:color-scheme-property, craft-guide:forced-colors, craft-guide:prefers-reduced-transparency]
   depth: direct
   fix: yes if --fix, else no
   source: web-standards:theme-audit
