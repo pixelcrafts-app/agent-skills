@@ -82,7 +82,7 @@ Install: `/plugin install web-standards@pixelcrafts`.
 | Slash command | What it does |
 |---|---|
 | [/web-standards:pre-ship](#pre-ship-web) | Quality gate before merge |
-| [/web-standards:premium-check](#premium-check-web) | Craft audit — delegates `craft-guide §1 – §15` to the engine; rule-by-rule PASS/FAIL, optional fix loop |
+| [/web-standards:premium-check](#premium-check-web) | Craft audit — delegates all `craft-guide` rules to the engine; rule-by-rule PASS/FAIL, optional fix loop |
 | [/web-standards:extract-tokens](#extract-tokens) | Extract design tokens from codebase or input; write `design-tokens.md` single source of truth |
 | [/web-standards:theme-audit](#theme-audit) | Verify theme completeness — light/dark parity, hydration flash, `color-scheme`, switch coverage |
 | [/web-standards:aesthetic-coherence](#aesthetic-coherence) | Detect aesthetic mixing — flag screens committing to two design languages at once |
@@ -123,7 +123,7 @@ Install: `/plugin install core-standards@pixelcrafts`.
 |---|---|---|
 | principles | Every non-trivial task | Detect→Check→Suggest discipline. Evidence required for every verdict. Plan/Execute/Verify as separate phases — compressing them into one response means one wasn't done. Adversarial verifier mindset: find what's wrong, not confirm what's right. |
 | planning | Every delivery task before code is written | Discovery protocol for cold start. Structured `<!-- craft:plan -->` block with measurable deliverables — each requires a runnable verification command (grep/Bash/Read). `scope_boundary` field. Trivial bypass requires grep evidence. Generates draft `.claude/craft.json` on first run if absent. |
-| rules | Every code file edit | Universal standards: §1 Security (ALWAYS-MANDATORY — no opt-out), §2 Testing, §3 Observability, §4 Engineering, §5 Design tokens. §1 applies to every touched file regardless of scope boundary or project config. |
+| rules | Every code file edit | Universal standards: `universal-rules:security` (ALWAYS-MANDATORY — no opt-out), `universal-rules:testing`, `universal-rules:observability`, `universal-rules:engineering`, `universal-rules:design-tokens`. Security applies to every touched file regardless of scope boundary or project config. |
 | verification | After every delivery task | Adversarial framing. Step 0 reads `.claude/craft.json`. 4-tier detection: ALWAYS-MANDATORY / PROJECT-MANDATORY / TASK-SCOPED / FLAGGED-NOT-ENFORCED. Phase 1 reads plan block — DONE requires named tool call, prose = MISSED. After any fix: restart from Phase 1 item 1. INFO for gap zones (does not block READY). |
 | auth-flows | When `craft.json features.auth` non-false, or auth patterns detected | Auth guard + permission guard both required (not auth alone). Refresh token rotation on every use. Server-side logout revocation. Access token ≤15min. OAuth PKCE. Auth error non-enumeration. Rate limiting on auth endpoints. |
 | craft-config | When `.claude/craft.json` is absent and needs generation | Documents `.claude/craft.json` schema: `stacks[]`, `features{}`, `disabled_rules[]`. Auto-generates draft from file detection. Disabled rules surfaced with reasons in every verification report. |
@@ -298,7 +298,7 @@ Closes the gap between "I finished the component" and "ready to ship". Thin wrap
 
 `/web-standards:premium-check <component-file>`
 
-Walks every rule in `craft-guide §1 – §15` against a single file. Thin wrapper: delegates to `core-standards:verify-changes` with `dimensions: [craft-guide §1 – §15]`, `depth: direct`. Before delegating, detects the app's aesthetic (§9) and density target (§8.5) — asks the user when ambiguous rather than guessing. With `--fix`, the engine loops: fix → re-audit → fix → re-audit until zero FAILs (or a rule hits the 3-retry stuck cap).
+Walks every rule in craft-guide against a single file. Thin wrapper: delegates to `core-standards:verify-changes` with `dimensions: [craft-guide]`, `depth: direct`. Before delegating, detects the app's aesthetic (`craft-guide:aesthetic-coherence`) and density target (`craft-guide:responsive-density`) — asks the user when ambiguous rather than guessing. With `--fix`, the engine loops: fix → re-audit → fix → re-audit until zero FAILs (or a rule hits the 3-retry stuck cap).
 
 Catches long-tail craft rules that single-pass audits skip. Expensive per-file — scope to one component or page at a time.
 
@@ -326,7 +326,7 @@ Never invents brand values. Asks the user when ambiguous.
 
 `/web-standards:theme-audit [optional-scope]`
 
-Thin wrapper: delegates to `core-standards:verify-changes` with the theme subset of craft rules — `craft-guide §13` (tokens, semantic naming, parity, hydration, color-scheme) plus `§1.5` (dark-mode contrast), `§11.3` (::selection), `§11.5` (caret-color), `§12.7` (color-scheme), `§12.8` (forced-colors), `§12.9` (reduced-transparency). Pre-flight: checks tokens exist (`design-tokens.md` or Tailwind / CSS var scan); if neither theme has tokens, halts and asks for `extract-tokens` first.
+Thin wrapper: delegates to `core-standards:verify-changes` with the theme subset of craft rules — `craft-guide:theme-system` (tokens, semantic naming, parity, hydration, color-scheme), `craft-guide:contrast-dark-mode`, `craft-guide:selection-styling`, `craft-guide:caret-color`, `craft-guide:color-scheme-property`, `craft-guide:forced-colors`, `craft-guide:prefers-reduced-transparency`. Pre-flight: checks tokens exist (`design-tokens.md` or Tailwind / CSS var scan); if neither theme has tokens, halts and asks for `extract-tokens` first.
 
 Catches theme completeness issues the full craft audit would catch too — faster because scope is narrower.
 
@@ -340,7 +340,7 @@ Pairs with `extract-tokens` — re-run after tokens land.
 
 Detects the #1 "assembled, not designed" tell: mixing two design languages in one surface (glassmorphism + neumorphism, bento + brutalist, AI-native + editorial).
 
-Hybrid pattern: runs **detection itself** (scoring 14 aesthetic signatures per file, flagging MIXED / OUTLIER / UNCLEAR) because that's a signal-scoring task, not a rule walk. After classification, delegates **spec compliance** to `core-standards:verify-changes` with `dimensions: [craft-guide §9]` — the engine walks §9.1 (single aesthetic), §9.2 (per-aesthetic specs), §9.3 / §9.4 (glass-specific legibility + reduced-transparency), §9.5 (numeric specs).
+Hybrid pattern: runs **detection itself** (scoring 14 aesthetic signatures per file, flagging MIXED / OUTLIER / UNCLEAR) because that's a signal-scoring task, not a rule walk. After classification, delegates **spec compliance** to `core-standards:verify-changes` with `dimensions: [craft-guide:aesthetic-coherence]` — the engine walks named-aesthetics, per-aesthetic-specs, glass-specific legibility and reduced-transparency rules, and per-aesthetic numeric specs.
 
 Cross-file: detects outlier screens committed to a different aesthetic than the app.
 

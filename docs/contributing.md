@@ -91,19 +91,19 @@ Then stop. The engine runs Phases 2-6.
 **Picking dimensions.** The wrapper's one real responsibility. Examples:
 
 - `web-standards:premium-check` → `dimensions: [craft-guide]`, `depth: direct`, `fix: no`
-- `web-standards:theme-audit` → `dimensions: [craft-guide §13]`, `depth: direct`, `fix: no`
+- `web-standards:theme-audit` → `dimensions: [craft-guide:theme-system]`, `depth: direct`, `fix: no`
 - `web-standards:pre-ship` → `dimensions: [ALL web-standards skills]`, `depth: direct+consumers`, `fix: no`
 - `flutter-standards:premium-check` → `dimensions: [craft-guide, widget-rules, accessibility, performance]`
 
-When a command audits a **subset** of a skill, use the rule-ID notation (`craft-guide §13`, `craft-guide §9.1-§9.5`). Add or confirm those rule IDs in the skill's SKILL.md — see the "Rule IDs" section below.
+When a command audits a **subset** of a skill, use the named section reference notation (`craft-guide:theme-system`, `craft-guide:aesthetic-coherence`). The dimension must match a section heading in the target SKILL.md — see the "Rule references" section below.
 
 **When NOT to thin-wrap.** If the command does something the engine can't express — setup workflows (`extract-tokens`), generative scaffolds (`scaffold-feature`), stack-specific regex scans that don't map to rule IDs (`find-hardcoded`, `find-duplicates`), cross-signal classification (`aesthetic-coherence`) — keep the command standalone. The wrapper pattern is for rule-walking audits, not for everything.
 
-## Rule IDs in standards skills
+## Rule references in standards skills
 
-Auto-invoke standards skills that are referenced as dimensions (notably `craft-guide`, `production-readiness`, `widget-rules`) should number their rules `§N.M` where N is the section and M is the sub-rule. This lets audit commands scope to a subset (`craft-guide §13`) and lets the engine iterate each rule individually without guessing boundaries.
+Rules in standards skills are identified by their **section heading**, not by positional number. A dimension reference like `craft-guide:aesthetic-coherence` maps to the `## Aesthetic Coherence` (or similar) section heading in `craft-guide/SKILL.md`. This survives skill edits — positional numbers (`§9`, `§4.2`) break silently when sections are inserted.
 
-When adding rules to these skills, pick the next unused `§N.M` and keep numbering dense (no gaps). When splitting a rule, use `§N.M.a`, `§N.M.b` rather than renumbering (stable IDs outlive single PRs).
+When adding rules to these skills, use a descriptive `##` or `###` heading. The heading becomes the stable identifier. Cross-references from other skills use `skill-name:section-heading` format — e.g. `universal-rules:security`, `craft-guide:aesthetic-coherence`. Do not use `§N.M` notation in new skills or when updating existing ones.
 
 ## Adding an enforcement rule (deterministic block)
 
