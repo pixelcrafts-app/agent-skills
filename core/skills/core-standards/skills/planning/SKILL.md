@@ -18,11 +18,13 @@ Before reading any files, classify the task by shape. This is the routing decisi
 | 1 file, 1 concern, no consumers | Inline |
 | 2–3 files, same module, known structure | Inline |
 | Research across unknown codebase area | Spawn Explore agent → inline continues with findings |
-| 3+ independent files across modules | Parallel agents — one per module |
+| 3+ independent files across separate modules | Parallel agents — one per module partition |
 | Task requires research AND implementation | Research agent first → implement inline with findings |
-| Cross-stack work (web + api, mobile + backend) | Agent per stack, parallel |
+| Work spans 2+ independent layers or domains | Agent per domain, parallel |
 | Large audit or multi-dimension verification | `verify-changes` |
-| Feature that touches auth, payments, or shared schema | Sequential agents — auth/schema first, feature after |
+| Feature touching shared contracts (schema, auth, public API) | Sequential agents — contract layer first, feature after |
+
+The routing unit is always structural — independent module, separate domain, shared contract. Never a technology name. The criteria apply to any codebase regardless of what it is built with.
 
 **If the route is agents:** write the agent briefs now, before any inline work starts. State the routing decision explicitly:
 
@@ -33,7 +35,7 @@ Agent 2: <scope>
 Dependency: <agent 2 waits for agent 1 result / independent>
 ```
 
-**The default is NOT inline.** Inline is for narrow, single-focus tasks. Anything multi-file, multi-concern, or multi-stack should route to agents first — not as a fallback when inline gets unwieldy.
+**The default is NOT inline.** Inline is for narrow, single-focus tasks. Anything multi-file, multi-concern, or spanning independent domains should route to agents first — not as a fallback when inline gets unwieldy.
 
 ---
 
@@ -45,10 +47,10 @@ If the ask references code you haven't read, read the relevant files first. You 
 
 When no files have been read — new session, new task, autonomous mode — run discovery before planning:
 
-1. Identify the entry point for the task (the screen, route, service, or model the task touches)
+1. Identify the entry point for the task — the file, module, or boundary the task touches first
 2. Read that file and the files it directly imports
-3. Identify the stack (Dart/Flutter, TypeScript/Next.js, TypeScript/NestJS, other) from file extensions and imports
-4. Locate the relevant pattern the task fits (existing screen, existing endpoint, existing service) and read one working example of that pattern
+3. Identify the stack from file extensions and package manifests — do not assume or name one before reading
+4. Locate one working example of the same pattern the task requires and read it
 5. Check for `.claude/craft.json` at the project root. If absent: detect stacks from file extensions and package manifests, generate a draft craft.json, and note it in the plan block. Do not block work if the user skips config setup.
 6. Only after steps 1–5: proceed to the planning steps below
 
@@ -86,7 +88,7 @@ deliverables:
     description: "..."
     files:
       - path/to/other.ts
-    verification: "Bash: flutter test test/screens/profile_test.dart | grep '0 failed'"
+    verification: "Bash: <test runner> <test path> | grep '0 failed'"
 scope_boundary: "loading state only — auth layer not in scope for this task"
 -->
 ```
