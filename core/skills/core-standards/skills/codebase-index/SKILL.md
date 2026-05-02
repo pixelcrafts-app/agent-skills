@@ -48,7 +48,22 @@ This is a local development artifact — machine-specific, session-derived. Unli
 
 ## Hash strategy
 
-**Tracked files** (committed to git): use `git ls-files -s <path>` — returns the blob SHA-1 git already computed. Zero extra cost; no hashing needed.
+**Do not use `git ls-files -s` as the sole hash source.** It returns the *index* hash — if a file is modified in the working tree but not yet staged, the index hash is stale and would produce a false cache hit.
+
+The correct two-step approach:
+
+### Step A — Always-miss files (no hash check needed)
+
+```bash
+git diff --name-only                          # modified in working tree
+git ls-files --others --exclude-standard      # new, untracked
+```
+
+Any file appearing in either output is **always a cache miss**. Skip the hash check entirely — these files have changed since the last commit and must be re-analyzed.
+
+### Step B — Unchanged files (safe to use index hash)
+
+For every file **not** in the Step A output, the working tree content is identical to the index. Here `git ls-files -s` is correct and zero-cost:
 
 ```bash
 git ls-files -s src/users/users.service.ts
@@ -56,23 +71,35 @@ git ls-files -s src/users/users.service.ts
 # Take field 2 as the hash.
 ```
 
-**Untracked files** (new, not yet staged): fall back to content hash.
+Because the working tree content equals the index for these files, the index hash reliably identifies their content. Compare against the cached hash — match means the file hasn't changed since the last audit.
+
+**Run both steps in one pass at session start:**
+
 ```bash
-shasum -a 256 src/new-file.ts | awk '{print $1}'   # macOS
-sha256sum src/new-file.ts | awk '{print $1}'        # Linux
+# Step A — collect always-miss files
+CHANGED=$(git diff --name-only; git ls-files --others --exclude-standard)
+
+# Step B — get index hashes for everything else (single process, fast)
+git ls-files -s
+# → parse: {path → hash} for all tracked files
+# Any path in $CHANGED → skip hash check (always miss)
+# Any path not in $CHANGED → check hash against cache
 ```
 
-**Why git blob hash over mtime**: `mtime` changes on every `git checkout` even when content is identical to a prior version. Git blob hash is content-derived — same bytes → same hash regardless of when, where, or which branch.
+**Why not `git hash-object` for everything?** It reads each file from disk to compute a hash — O(N file reads) before any audit starts. The two-step approach avoids this: git diff already knows which files changed, so only those need re-analysis; everything else uses the pre-computed index hash for free.
 
 ## Protocol
 
 ### Step 1 — Load cache (before any audit begins)
 
 ```bash
-# Get all tracked file hashes in one pass (fast, O(repo size), single process)
+# Collect always-miss files (these skip the hash check entirely)
+CHANGED=$(git diff --name-only; git ls-files --others --exclude-standard)
+
+# Get index hashes for all tracked files in one pass
 git ls-files -s
 # Output: <mode> <hash> <stage>\t<path>
-# Parse: split by tab, take field 2 as hash, field 1's last column as path
+# Parse: { path → hash } for all tracked files
 ```
 
 Read `.claude/audit-cache.json`. Build an in-memory lookup:
@@ -80,17 +107,20 @@ Read `.claude/audit-cache.json`. Build an in-memory lookup:
 { path → { blob_hash, audited_dimensions[], findings[] } }
 ```
 
-If the file does not exist: start with an empty cache. Do not error.
+Also store the `$CHANGED` set. Any file in this set is automatically a cache miss — the hash check in Step 2 is skipped for them.
+
+If the cache file does not exist: start with an empty lookup. Do not error.
 
 ### Step 2 — Check cache per file (before analyzing each file)
 
 Before reading or analyzing a file, evaluate three conditions in order:
 
-1. **File in cache?** — If not → must analyze.
-2. **Hash matches?** — Run `git ls-files -s <path>` and compare to `cached_hash`. If different → content changed, must re-analyze this file fully.
-3. **Dimension covered?** — Does `audited_dimensions` include the dimension being audited? If not → must analyze for this dimension.
+1. **File in changed set?** — If the path is in `$CHANGED` (from Step 1) → **always a cache miss**. Skip all other checks.
+2. **File in cache?** — If not → must analyze.
+3. **Hash matches?** — Look up the index hash from the `git ls-files -s` output (already fetched in Step 1). Compare to `cached_hash`. If different → content changed, must re-analyze.
+4. **Dimension covered?** — Does `audited_dimensions` include the dimension being audited? If not → must analyze for this dimension.
 
-**All three must pass** (in cache, same hash, dimension already covered) → **cache hit**: skip reading and analyzing the file. Inject cached findings for this dimension directly into `verify-state.json` with `source: "cache"`.
+**Conditions 2–4 all pass** (in cache, hash matches, dimension covered) → **cache hit**: skip reading and analyzing the file. Inject cached findings for this dimension directly into `verify-state.json` with `source: "cache"`.
 
 **Any condition fails** → cache miss: read and analyze normally.
 
