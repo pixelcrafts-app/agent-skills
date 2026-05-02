@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Production-grade standards for Claude Code — Flutter, API (NestJS + Prisma), Web (Next.js), Mobile-universal. Install a pack, Claude applies the standards. No CLAUDE.md edits.",
-    "version": "0.13.0"
+    "version": "0.14.0"
   },
   "plugins": [
     {
@@ -20,8 +20,8 @@
     {
       "name": "core-standards",
       "source": "./core/skills/core-standards",
-      "description": "Cross-stack engine and universal skills. verify-changes (tool-first verification, source field, divergence reporting, named rule refs). planning (routing decision table, enforcement.json auto-generation). universal-rules (Security/Testing/Observability/Engineering/Design-tokens — named section refs). verification (craft.json-based detection, 4-tier model). auth-flows, craft-config, mcp-integration, docs-sync, subagent-brief.",
-      "version": "0.3.0",
+      "description": "Cross-stack engine and universal skills. verify-changes (tool-first verification, source field, divergence reporting, named rule refs, audit-cache integration). codebase-index (persistent audit cache keyed by git blob hash — skip unchanged files across sessions, ~78% token reduction on repeat audits). planning (routing decision table, enforcement.json auto-generation). universal-rules (Security/Testing/Observability/Engineering/Design-tokens — named section refs). verification (craft.json-based detection, 4-tier model). auth-flows, craft-config, mcp-integration, docs-sync, subagent-brief.",
+      "version": "0.4.0",
       "category": "core",
       "tags": ["skills", "cross-stack", "engine", "standards", "orchestration", "auth", "craft-config"]
     },

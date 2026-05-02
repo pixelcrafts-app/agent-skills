@@ -54,7 +54,7 @@ If the brief is malformed (missing a required field, unknown dimension name), fa
 
 ## Phase 0 — State initialization
 
-Before any other phase, manage `.claude/verify-state.json`.
+Before any other phase, manage `.claude/verify-state.json` and load the audit cache.
 
 ### 0.1 — Check for existing state
 
@@ -82,7 +82,17 @@ Write `.claude/verify-state.json`:
 
 `scope` and `dimensions` are filled in after Phase 1. `batches` and `findings` are populated during Phase 4.
 
-### 0.3 — State schema (reference)
+### 0.3 — Load audit cache
+
+After initializing `verify-state.json`, load `.claude/audit-cache.json` per `codebase-index` Step 1:
+
+```bash
+git ls-files -s   # get current blob hashes for all tracked files in one pass
+```
+
+Read `.claude/audit-cache.json` (if it exists — start empty if absent). Build a working lookup `{path → {blob_hash, audited_dimensions[], findings[]}}` in memory. This lookup is used in Phase 4 to skip unchanged files.
+
+### 0.4 — State schema (reference)
 
 ```json
 {
@@ -336,7 +346,9 @@ For each tool run:
 
 For each batch:
 
-1. **Check verify-state.json before starting** — read the flat `findings` array. If any `(rule, file)` pair in this batch is already recorded by a tool (`source: "tool"`), skip that concern — the tool verdict is final. For AI-judgment findings already recorded, also skip. This prevents duplicate work.
+1. **Check cache and verify-state.json before starting** — two checks, in order:
+   - **Audit cache** (`codebase-index` Step 2): for each file in this batch, compare current blob hash against `.claude/audit-cache.json`. If the hash matches AND this dimension is in `audited_dimensions` → **cache hit**: inject cached findings into `verify-state.json` with `source: "cache"` and skip this file entirely. Do not read the file, do not apply rules.
+   - **verify-state.json**: read the flat `findings` array. If any `(rule, file)` pair is already recorded by a tool (`source: "tool"`), skip that concern — the tool verdict is final. For AI-judgment findings already recorded, also skip. This prevents duplicate work within the current run.
 2. **Mark batch tasks in_progress** via TaskUpdate
 3. **Load only what's needed** — read the files in this batch, load only the standards skill relevant to this batch's dimension. Don't pre-load the whole pack.
 4. **Iterate rule-by-rule — only rules tools cannot cover** — for every rule in the loaded dimension's SKILL.md, produce one record per (rule × file):
@@ -356,6 +368,7 @@ For each batch:
    findings: [...existing..., ...new findings from this batch]
    ```
    Write atomically — update the full file, not a partial append. This is the shared truth layer: any subsequent agent, phase, or resumed session reads it as authoritative.
+6a. **Update audit cache** (`codebase-index` Step 3) — for each file analyzed in this batch (not cache-hit files): write current blob hash + this dimension + new findings back to `.claude/audit-cache.json`. Merge with existing entries; do not overwrite findings from other dimensions.
 7. **Emit a compact batch summary** (under 100 words): "Batch N done. X PASS, Y FAIL. Top failures: ..."
 8. **Move on** — don't re-quote Batch N's full records into the next message. They are in task metadata and verify-state.json; Phase 5 reads them back.
 
@@ -366,14 +379,18 @@ If verify-changes delegates a dimension to a subagent (per `subagent-brief` rule
 ```
 CONTEXT
   verify-state.json — read .claude/verify-state.json before starting.
+  audit-cache — read .claude/audit-cache.json before starting (codebase-index Step 1).
   Already verified (do not re-check):
     <list of (rule, file) pairs already in the flat findings array>
+  Cache hits — skip these files entirely (hash + dimension already covered):
+    <list of paths that are cache hits for this dimension>
   Trust boundary: record raw findings with file:line evidence.
   Do not summarize — the cross-check phase reads your raw output.
 
 OUTPUT
   Write your batch findings to verify-state.json before returning.
-  Return a compact summary only: batch_id, pass_count, fail_count, top 3 failures.
+  Update .claude/audit-cache.json for each file you analyzed (codebase-index Step 3).
+  Return a compact summary only: batch_id, pass_count, fail_count, cache_hits, top 3 failures.
 ```
 
 This makes the state file the trust layer between agents — not the conversation thread. The parent does not need to re-verify the subagent's findings; it reads the evidence directly from the state file.
@@ -419,7 +436,9 @@ Dimensions: <which standards>
 Depth: <direct | direct+consumers | full ripple>
 
 Totals
-  Files verified: X
+  Files in scope: X
+  Cache hits (skipped): N  ← files unchanged since last audit
+  Files analyzed: X - N
   Tasks completed: Y / Z
   PASS: ...   FAIL: ...
 
