@@ -11,6 +11,58 @@ Every Task/Agent prompt must contain labeled sections covering GOAL, CONTEXT, SC
 
 ---
 
+## Contracts — non-negotiable for file analysis delegation
+
+These three apply whenever a subagent will read, analyze, or audit files. They are not advisory.
+
+### 1 — Cache pass-through
+
+Before spawning, load `.claude/audit-cache.json` and extract cache hits for the agent's file scope. Include them explicitly in the brief under a `CACHE CONTEXT` section. An agent without cache context re-reads every file from scratch — this is the primary source of token waste in multi-agent work.
+
+See `codebase-index` Multi-agent protocol for the exact extraction and injection format.
+
+### 2 — Excerpt contract (never name, always paste)
+
+If the parent already read a file, paste the relevant lines into the brief. Do not tell the subagent to read it. Naming a file the parent already loaded makes the subagent pay again for something already in context.
+
+```
+# Wrong — makes subagent re-read
+CONTEXT
+  See src/activity/activity.controller.ts for the auth guard setup.
+
+# Right — transfers the cost to a few tokens
+CONTEXT
+  src/activity/activity.controller.ts:17 — @UseGuards(AuthGuard) at controller level (all endpoints protected)
+  src/activity/activity.controller.ts:40 — @Query('limit') limit = '50' (no max validation)
+```
+
+### 3 — Write-back contract
+
+If the agent analyzes files, it must write findings to `.claude/audit-cache.json` before returning. Include this instruction explicitly in the OUTPUT section:
+
+```
+OUTPUT
+  Write findings to .claude/audit-cache.json (codebase-index Step 3) for each file analyzed.
+  Return compact summary only: files analyzed, cache hits skipped, top findings.
+```
+
+The parent verifies by reading the state file — not by re-reading the agent's prose. An agent that returns a prose summary but writes nothing to the cache has not completed its contract.
+
+---
+
+## Trust model — state files, not prose
+
+Subagent output is a summary for humans. It is not a verification signal.
+
+After every agent returns:
+- Check `.claude/audit-cache.json` — are findings written for the agent's assigned files?
+- Check `.claude/verify-state.json` — are batch records present (if running verify-changes)?
+- Any file in scope with no cache entry = agent failed the write-back contract → re-analyze inline.
+
+"I checked the auth module and it looks correct" with nothing written to the cache is not a PASS. Evidence lives in state files.
+
+---
+
 ## GUIDE — advisory judgment calls
 
 Everything below is judgment. Claude decides.
@@ -108,6 +160,14 @@ CONTEXT (what the parent already has — do not rediscover)
   - <fact> — <source>
   - <exclusions> — <paths the subagent must not investigate>
 
+CACHE CONTEXT (file analysis tasks only — omit for pure research/lookup)
+  Skip entirely — already audited, content unchanged:
+    <path>  [<dimension> → <verdict> — <one-line evidence>]
+    ...
+  Analyze these — cache miss or changed:
+    <path>  [reason: in git diff | new file | dimension not yet covered]
+    ...
+
 SCOPE
   - In:  <paths or patterns>
   - Out: <explicit exclusions>
@@ -117,6 +177,8 @@ TASK
 
 OUTPUT
   <return shape — table, bullet list, word budget, line-ref list, etc.>
+  [If file analysis]: Write findings to .claude/audit-cache.json before returning.
+  [If file analysis]: Return compact summary only — the parent reads the state file, not this summary.
 
 BUDGET  (optional — set when capping spend matters)
   <e.g. tool-call cap>
@@ -134,9 +196,12 @@ Paste the excerpt the parent already has into the prompt, rather than naming the
 2. **Unbounded brief.** A prompt with no goal, no scope, and no output shape causes the subagent to invent all three.
 3. **Exploration without reshaping.** Replace open-ended exploration prompts with a specific enumerated read set and a shaped summary output.
 4. **Spawn for trivial work.** Round-trip plus cold start costs more than a direct inline call.
-5. **Overlapping parallel agents.** Agents with intersecting scope duplicate their work.
+5. **Overlapping parallel agents.** Agents with intersecting scope duplicate their work — the same file read by two agents is always wasted.
 6. **Spawn then re-verify manually.** Re-reading the same files the subagent read is paying twice, not delegating.
 7. **Name-drop brief.** Referring to a file by path instead of pasting the relevant excerpt forces the subagent to re-read context the parent already has.
+8. **No cache pass-through.** Sending a file analysis agent without cache context makes it re-read and re-analyze every file the cache already has answers for.
+9. **Trusting prose over state.** Accepting "I verified it and it's fine" without checking `.claude/audit-cache.json` or `.claude/verify-state.json` is not verification.
+10. **No write-back instruction.** If the OUTPUT section does not say "write to cache", the agent will not write. Findings that exist only in the agent's response text are lost when the context window clears.
 
 ---
 
