@@ -2,7 +2,7 @@
 
 Standards your Claude Code follows — automatically. Install a pack, Claude applies the rules on every file, plans before coding, verifies its own output, and guards against mistakes. No `CLAUDE.md` edits.
 
-![version](https://img.shields.io/badge/version-0.14.0-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![plugins](https://img.shields.io/badge/plugins-7-orange)
+![version](https://img.shields.io/badge/version-0.15.0-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![plugins](https://img.shields.io/badge/plugins-7-orange)
 
 ---
 
@@ -15,9 +15,11 @@ USER ASK
     │
     ▼
 ┌──────────────────────────────────────────────────────┐
-│  CORE-HOOKS  (bash — fires before every tool use)    │
+│  CORE-HOOKS  (bash — fires before/after every tool)  │
 │  protect-files · protect-bash · enforce-rules        │
 │  enforcement-preamble · stop-gate · session-ledger   │
+│  post-test (PostToolUse — runs tests after writes,   │
+│             exit 2 on failure → forces fix)          │
 │  (configurable via .claude/enforcement.json)         │
 └──────────────────────┬───────────────────────────────┘
                        │
@@ -34,6 +36,11 @@ USER ASK
 │  verification · auth-flows · craft-config            │
 │  subagent-brief · mcp-integration · docs-sync        │
 │  codebase-index (audit cache — git blob hash keys)   │
+│                                                      │
+│  AUTONOMOUS PIPELINE (production — single prompt)    │
+│  spec-validator · contracts · challenger             │
+│  contract-tests · integration · full-setup           │
+│  Commands: /full-setup · /spec                       │
 └───────────┬──────────────────────┬───────────────────┘
             │                      │
             ▼                      ▼
@@ -75,6 +82,7 @@ USER ASK
 | `protect-files` | Every file edit | Blocks `.env`, credentials, lockfiles (configurable) |
 | `protect-bash` | Every shell command | Blocks `rm -rf`, force push, destructive ops (configurable) |
 | `enforce-rules` | Every file edit | Runs pack rule registry (opt-in per project) |
+| `post-test` | Every Write/Edit/MultiEdit | Detects stack, runs related fast tests; exit 2 on failure forces Claude to fix before continuing |
 | `stop-gate` | Every turn end | Blocks until mandatory gate passes (opt-in) |
 | Stack skills | Relevant file edits | Flutter/web/api rules loaded automatically by file type |
 | `work-principles` | Every non-trivial task | Detect→Check→Suggest, non-destructive reasoning |
@@ -86,6 +94,8 @@ USER ASK
 | Trigger | What fires | Result |
 |---|---|---|
 | `"verify my changes"` | `verify-changes` | Audit with dependency graph, PASS/FAIL per rule with evidence |
+| `/full-setup` | `core-standards:full-setup` | Detects stack, generates project layer (CLAUDE.md, `.claude/rules/`, agent files), wires `craft.json` + `enforcement.json` + hooks. One-shot setup for any project — new or existing. |
+| `/spec` | `core-standards:spec-validator` | Validates and locks spec; emits `acceptance-tests.md` as the objective definition of done before any implementation begins. |
 | `/flutter-standards:app-audit` | app-audit → `verify-changes` | Full Flutter audit: pre-ship + craft + screen states |
 | `/web-standards:pre-ship` | thin wrapper → `verify-changes` | Pre-commit web audit |
 | `/web-standards:premium-check` | thin wrapper → `verify-changes` | UI craft quality check |
@@ -97,8 +107,8 @@ USER ASK
 
 | Pack | Stack | Skills |
 |---|---|---|
-| `core-hooks` | All | 5 bash enforcement hooks |
-| `core-standards` | All | Engine + cross-stack universal skills (verify-changes, codebase-index, universal-rules, planning, verification, auth-flows, craft-config, subagent-brief, docs-sync, and more) |
+| `core-hooks` | All | Bash enforcement hooks — pre-tool guards + PostToolUse `post-test` (auto-runs fast tests on every write) + stop-gate |
+| `core-standards` | All | Engine + cross-stack universal skills + autonomous pipeline (spec-validator, contracts, challenger, contract-tests, integration, full-setup) for single-prompt → verified delivery |
 | `design-standards` | Web + iOS + Android | 6 platform-agnostic design skills |
 | `web-standards` | Next.js / Tailwind / shadcn | 11 skills — craft, audit, performance, i18n, taste |
 | `api-standards` | NestJS / Prisma | 6 skills — api-design, nestjs, db-migrations, websockets |
@@ -155,9 +165,10 @@ USER ASK
 
 core/skills/
   core-hooks/                    bash enforcement hooks
-    hooks/                       protect-files · protect-bash · enforce-rules · stop-gate · session-ledger
+    hooks/                       protect-files · protect-bash · enforce-rules · stop-gate · session-ledger · post-test
     enforcement/                 per-pack rule registries (JSON)
-  core-standards/                engine + universal skills
+  core-standards/                engine + universal skills + autonomous pipeline
+    commands/                    /full-setup · /spec slash commands
     skills/verify-changes/       audit + delivery engine
     skills/work-principles/      always-load behavioral rules
     skills/planning/             pre-delivery planning procedure
@@ -167,6 +178,12 @@ core/skills/
     skills/mcp-integration/      MCP config reference
     skills/docs-sync/            post-audit doc drift check
     skills/codebase-index/       persistent audit cache keyed by git blob hash
+    skills/spec-validator/       challenges spec for gaps; locks acceptance-tests.md
+    skills/contracts/            architect-defined contracts; locked before implementation
+    skills/challenger/           adversarial review with fresh context (3-round cap)
+    skills/contract-tests/       tests generated from contracts; implementer cannot modify
+    skills/integration/          wires implementations; runs acceptance tests; 5-attempt fix loop
+    skills/full-setup/           project-layer generator: CLAUDE.md, .claude/rules/, agent files
 
 design/skills/design-standards/  platform-agnostic design (Web + iOS + Android)
     skills/accessibility/        WCAG 2.2 + Swift traits + Compose semantics
@@ -218,4 +235,4 @@ scripts/                         compile agents, export utilities
 
 ---
 
-**v0.14.0** · MIT · PRs welcome → [docs/contributing.md](docs/contributing.md)
+**v0.15.0** · MIT · PRs welcome → [docs/contributing.md](docs/contributing.md)

@@ -102,6 +102,12 @@ Run on every Edit / Write / Bash:
 - `enforce-tokens.sh` — blocks raw design values in projects with a token system. Rules live in the stack skill packs; this hook enforces deterministically.
 - `enforce-rules.sh` — **enforcement mode (opt-in)**. When a project commits `.claude/enforcement.json` listing mandatory packs, this hook runs each pack's rule registry against every Edit / Write / MultiEdit and hard-blocks on violation. See [docs/enforcement.md](enforcement.md).
 
+### PostToolUse hooks
+
+Run after every Write / Edit / MultiEdit:
+
+- `post-test.sh` — detects stack from project root (Flutter / Node / Go / Python), runs the appropriate fast test command for the changed file. Exit 2 on test failure forces Claude to fix before the turn proceeds. Fail-open: any detection or runner error returns exit 0 — never strands the user. This is the gate that converts quality from optional ("Claude *should* run tests") to deterministic ("Claude *cannot* skip them").
+
 ### SessionStart hook
 
 - `rules-discipline.sh` — surfaces plugin-hook mechanics to Claude. Notably: hooks run in the main session only, not inside subagent writes.
@@ -132,7 +138,27 @@ Install: `/plugin install core-standards@pixelcrafts`.
 | verify-changes | User says "verify my changes" / "cross-check" / "audit what I did" / ends a non-trivial chunk of work | Generic cross-stack verification workflow. Asks scope + dimensions + depth. Builds a dependency graph. Verifies rule-by-rule from whichever SKILL.md files are installed. Integrates with `codebase-index` to skip unchanged files on repeat audits. Emits critical / polish / consumer-break verdict with cache-hit count. Pure prompt — no hooks, no external tools. |
 | codebase-index | Loaded by verify-changes at Phase 0 | Persistent audit cache keyed by git blob hash. Protocol: `git diff --name-only` identifies always-miss files; `git ls-files -s` supplies index hashes for unchanged files; findings stored in `.claude/audit-cache.json` per `{path, dimension}`. Eliminates re-reading unchanged files across repeated audits — ~78% token reduction on a 2000-file repo audited 5 times. |
 
+#### Autonomous pipeline (production)
+
+The skills below compose the production autonomous loop — single-prompt → verified delivery. Each phase is locked before the next begins. Two human touchpoints only: (1) review spec + acceptance tests, (2) review final PR.
+
+| Skill | Phase | Does |
+|---|---|---|
+| spec-validator | Phase 0 — spec | Challenges the human spec for gaps; surfaces missing acceptance criteria; locks `acceptance-tests.md` as the objective definition of done. No implementation begins until `spec.md` is locked. Invoked via `/spec`. |
+| contracts | Phase 1 — architecture | Architect agent defines all interfaces, types, API shapes, data models before any code. Stored in `.claude/contracts/` and locked after Challenger review + human approval. Eliminates integration blindness — every integration point is explicit before parallel work begins. |
+| challenger | Phase 1 + 4 — adversarial review | Fresh-context agent that never saw the implementation process. Reviews contracts ("3 ways these are wrong or incomplete") and finished work against the spec. BLOCK / WARN / INFO thresholds, 3-round cap. Defeats done-delusion and compounding hallucination. |
+| contract-tests | Phase 2 — test generation | Tests authored by a dedicated Test Writer FROM contracts — never by the implementer. Locked: implementer cannot modify the test file. The only way to make tests pass is to correctly implement the contract. Prevents fix-the-test failure mode. |
+| integration | Phase 3 — wiring | Integration agent (fresh context) wires implementations using contracts as the spec. Runs acceptance tests from Phase 0. Automatic fix loop: max 5 attempts before escalation. Maintains `progress.md` as observation only — reviewer trusts test results, not state files. |
+| full-setup | Setup | Generates the project layer for any project — new or existing. Detects stack (Flutter / NestJS / Next.js / etc.), reads existing code if present, generates `CLAUDE.md`, `.claude/rules/domain.md`, `.claude/rules/quality.md`, agent files (orchestrator, implementer, reviewer, challenger, integration), `craft.json`, `enforcement.json`, and wires PostToolUse hooks in `settings.json`. Invoked via `/full-setup`. |
+
 Install either / both alongside any pack — they apply regardless of stack.
+
+#### Slash commands (autonomous pipeline)
+
+| Slash command | What it does |
+|---|---|
+| [/full-setup](#full-setup) | Bootstraps a project for autonomous production development |
+| [/spec](#spec) | Validates and locks the spec; emits `acceptance-tests.md` |
 
 ---
 
@@ -346,3 +372,40 @@ Hybrid pattern: runs **detection itself** (scoring 14 aesthetic signatures per f
 Cross-file: detects outlier screens committed to a different aesthetic than the app.
 
 Fix loop is **manual-confirmation** — aesthetic rewrites are taste calls, not automatic. This skill flags and proposes; user approves per file. Never invokes the engine with `fix: yes`.
+
+---
+
+### full-setup
+
+`/full-setup [optional-description]`
+
+One-shot setup for any project — new or existing. Detects stack from manifests (`pubspec.yaml`, `package.json`, `go.mod`, `requirements.txt`, etc.), reads existing source if present, and generates the **project layer** the engine needs to drive autonomous work:
+
+- `CLAUDE.md` — what this app is, definition of done, out-of-scope list, current milestone
+- `.claude/rules/domain.md` — business rules specific to this app (entities, invariants, behaviour)
+- `.claude/rules/quality.md` — quality bar specific to this app (performance budgets, test coverage targets, accessibility floor)
+- `.claude/agents/` — orchestrator, implementer, reviewer, challenger, integration agent files
+- `.claude/spec.md`, `.claude/progress.md` — empty starters for the autonomous loop
+- `.claude/craft.json`, `.claude/enforcement.json` — engine config keyed to detected stacks
+- `.claude/settings.json` — wires PostToolUse hooks (post-test) and registers the marketplace
+
+Two modes:
+1. **New project** — pass a description (`/full-setup "Superman flying game in Flutter"`); skill generates a starter layer based on domain inference.
+2. **Existing project** — no argument; skill reads `src/`, package manifests, existing patterns and infers domain entities, established conventions, and quality bar from the code itself.
+
+After setup, the project is ready for `/spec` → autonomous pipeline.
+
+---
+
+### spec
+
+`/spec "<what to build>"`
+
+Phase 0 of the autonomous pipeline. Validates the spec adversarially before any code is written:
+
+1. **Challenges the spec** — surfaces gaps ("logout invalidation rule is unstated", "rate limiting requirements?"), ambiguities, missing acceptance criteria.
+2. **Asks clarifying questions** — only the ones that actually block writing acceptance tests. Skipped if spec is already complete.
+3. **Generates `acceptance-tests.md`** — concrete test cases derived from the spec (Given/When/Then). This file becomes the objective definition of done.
+4. **Locks** — once the human approves, both `spec.md` and `acceptance-tests.md` are immutable. Downstream agents read them but cannot rewrite them.
+
+This is the only way "done" is objective. Without it, the agent that writes the code is the same one that decides when it's finished — that is hope, not verification.

@@ -4,6 +4,42 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ---
 
+## [0.15.0] — 2026-05-04
+
+Production autonomous pipeline. Single prompt → verified delivery. Architecture derived from analysis of 12 known failure modes of autonomous AI agents (goal drift, done-delusion, compounding hallucination, fix-the-test, integration blindness, state file trust, spec incompleteness, context bloat, write collisions, bad-architecture recovery, validation gap, tool-call reliability). Plan C+B hybrid: spec-locked → contracts-locked → parallel implementation → integration → adversarial review.
+
+### Added — `core-standards` autonomous pipeline (6 new skills)
+
+- **`spec-validator`** (Phase 0) — challenges human-written spec for gaps; surfaces missing acceptance criteria; locks `acceptance-tests.md` as the objective definition of done. No implementation begins until spec is locked.
+- **`contracts`** (Phase 1) — architect agent defines all interfaces, types, API shapes, data models before any code. Stored in `.claude/contracts/`, locked after Challenger review + human approval. Solves integration blindness by making every integration point explicit before parallel work begins.
+- **`challenger`** (Phases 1 + 4) — fresh-context adversarial agent. Reviews contracts ("3 ways these are wrong or incomplete") and finished work against spec. BLOCK / WARN / INFO thresholds with a 3-round cap. Defeats done-delusion and compounding hallucination — challenger never saw the implementation process.
+- **`contract-tests`** (Phase 2) — tests authored by a dedicated Test Writer FROM contracts, never by the implementer. Locked: implementer cannot modify the test file. Prevents fix-the-test failure mode.
+- **`integration`** (Phase 3) — integration agent (fresh context) wires implementations using contracts as spec. Runs acceptance tests from Phase 0. Automatic fix loop: max 5 attempts before escalation. Reviewer trusts test results, not state files.
+- **`full-setup`** (setup) — one-shot project-layer generator for any project, new or existing. Detects stack (Flutter / NestJS / Next.js / etc.), reads existing source, generates `CLAUDE.md`, `.claude/rules/domain.md`, `.claude/rules/quality.md`, agent files (orchestrator / implementer / reviewer / challenger / integration), `craft.json`, `enforcement.json`, wires PostToolUse hooks. Two modes: new (description-driven) and existing (code-driven).
+
+### Added — `core-standards` slash commands
+
+- `/full-setup [optional-description]` — bootstraps the project layer.
+- `/spec "<what to build>"` — Phase 0 validate-and-lock.
+- Wired via `commands/` directory in plugin and `"commands": ["./commands/"]` declaration in `plugin.json`.
+
+### Added — `core-hooks:post-test` (PostToolUse hook)
+
+- Runs after every Write / Edit / MultiEdit. Detects stack from project root (Flutter / Node / Go / Python), runs the appropriate fast test command for the changed file. Exit 2 on test failure forces Claude to fix before the turn proceeds. Fail-open on detection or runner errors (exit 0) — never strands the user.
+- This is the gate that converts quality from optional ("Claude *should* run tests") into deterministic ("Claude *cannot* skip them"). Single most important quality lever in the release.
+
+### Architecture — two human touchpoints
+
+The pipeline reduces human involvement to exactly two points: (1) review spec + acceptance tests, (2) review final PR. Everything in between — contracts, implementation, testing, integration, review — runs without intervention.
+
+### Versions
+
+- `core-standards`: `0.4.0` → `0.5.0` (autonomous pipeline + commands path).
+- `core-hooks`: `0.11.0` → `0.12.0` (PostToolUse `post-test` added).
+- marketplace: `0.14.0` → `0.15.0`.
+
+---
+
 ## [0.14.0] — 2026-05-02
 
 Persistent audit cache. Repeated audits on large codebases re-read all files from scratch — 5 audits on a 2000-file repo = 10,000 file reads. This release eliminates that: unchanged files are skipped using git blob hashes as cache keys.
