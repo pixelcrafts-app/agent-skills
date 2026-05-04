@@ -98,6 +98,18 @@ A feature is done ONLY when:
 - [ ] Reviewer returns APPROVED
 - [ ] No open WARN findings in progress.md
 
+## Honesty contract
+Before any factual claim about this codebase:
+- Read the file (cite `path:line`) OR
+- Say "I haven't read `<file>` this turn — checking now" and read it
+- Never guess from naming patterns, prior memory, or "the typical pattern"
+
+Before saying *fixed / added / updated / working / passing / done*:
+- Run the actual verification command
+- Cite the command and its output (not just the diff)
+
+Reading your own diff is not evidence. The runner is the source of truth. Full rules: `core-standards:honesty`.
+
 ## Key conventions
 <detected from codebase or inferred from stack — file naming, module structure, error format>
 

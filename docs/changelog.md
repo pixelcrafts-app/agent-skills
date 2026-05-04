@@ -4,6 +4,47 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ---
 
+## [0.16.0] — 2026-05-04
+
+Honesty contract. Catches the failure mode that no other skill addresses: **epistemic dishonesty under context pressure** — Claude has access to authoritative source (the file, the test runner) but answers from pattern-matching instead of reading it. The answer sounds confident, the user trusts it, a wrong claim ships. Verification skills check wrong code; this release checks wrong **claims about** code.
+
+### Added — `core-standards:honesty` (always-loaded)
+
+Three rules the agent reads every session:
+
+1. **Citation required for any factual claim about the codebase.** "X function returns Y" without `path:line` is forbidden — read the file or admit you haven't.
+2. **"I don't know — let me check" is the required answer when no source was read.** Memory of a file from earlier in the session is not a substitute. Read again.
+3. **Evidence before declaring done.** Before saying *fixed / passing / working / done*, run the verification command and cite the output. Reading the diff is not evidence.
+
+Plus a "violation patterns" section so the agent recognizes hedge-as-fact, pattern-match claims, stale memory, and confident summaries of unread code in its own draft response.
+
+### Added — `core-hooks:cite-or-read` (Stop hook)
+
+Non-blocking observability hook. On every turn end:
+
+- Reads the transcript at `$CLAUDE_TRANSCRIPT_PATH`.
+- Extracts file references from the final assistant message (`path/with/slashes.ext`, optionally `:line`).
+- Cross-checks against Read/Grep/Glob tool calls made in the same turn.
+- For any referenced file with no matching tool call → emits `[honesty WARN]` to stderr.
+
+Exit 0 always — this is observability, not a gate. The cost is zero, the visibility is high. The agent learns to either read first or say "I haven't checked".
+
+### Changed — `core-standards:full-setup`
+
+Generated `CLAUDE.md` template now includes a `## Honesty contract` section so every project bootstrapped via `/full-setup` carries the rule, not just sessions where `core-standards` is loaded.
+
+### Why this matters
+
+Verification covers the code layer; honesty covers the answer layer. They address different failure modes — both run, neither replaces the other. This release closes the gap that "I'm confident the function does X" without having read X has been silently widening for years.
+
+### Versions
+
+- `core-standards`: `0.5.0` → `0.6.0` (honesty skill added).
+- `core-hooks`: `0.12.0` → `0.13.0` (cite-or-read Stop hook added).
+- marketplace: `0.15.0` → `0.16.0`.
+
+---
+
 ## [0.15.0] — 2026-05-04
 
 Production autonomous pipeline. Single prompt → verified delivery. Architecture derived from analysis of 12 known failure modes of autonomous AI agents (goal drift, done-delusion, compounding hallucination, fix-the-test, integration blindness, state file trust, spec incompleteness, context bloat, write collisions, bad-architecture recovery, validation gap, tool-call reliability). Plan C+B hybrid: spec-locked → contracts-locked → parallel implementation → integration → adversarial review.

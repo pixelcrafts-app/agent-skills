@@ -2,7 +2,7 @@
 
 Standards your Claude Code follows — automatically. Install a pack, Claude applies the rules on every file, plans before coding, verifies its own output, and guards against mistakes. No `CLAUDE.md` edits.
 
-![version](https://img.shields.io/badge/version-0.15.0-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![plugins](https://img.shields.io/badge/plugins-7-orange)
+![version](https://img.shields.io/badge/version-0.16.0-blue) ![license](https://img.shields.io/badge/license-MIT-green) ![plugins](https://img.shields.io/badge/plugins-7-orange)
 
 ---
 
@@ -20,6 +20,8 @@ USER ASK
 │  enforcement-preamble · stop-gate · session-ledger   │
 │  post-test (PostToolUse — runs tests after writes,   │
 │             exit 2 on failure → forces fix)          │
+│  cite-or-read (Stop — WARNs on unsourced claims      │
+│                about files not Read this turn)       │
 │  (configurable via .claude/enforcement.json)         │
 └──────────────────────┬───────────────────────────────┘
                        │
@@ -36,6 +38,7 @@ USER ASK
 │  verification · auth-flows · craft-config            │
 │  subagent-brief · mcp-integration · docs-sync        │
 │  codebase-index (audit cache — git blob hash keys)   │
+│  honesty (no unsourced claims, evidence before done) │
 │                                                      │
 │  AUTONOMOUS PIPELINE (production — single prompt)    │
 │  spec-validator · contracts · challenger             │
@@ -83,6 +86,8 @@ USER ASK
 | `protect-bash` | Every shell command | Blocks `rm -rf`, force push, destructive ops (configurable) |
 | `enforce-rules` | Every file edit | Runs pack rule registry (opt-in per project) |
 | `post-test` | Every Write/Edit/MultiEdit | Detects stack, runs related fast tests; exit 2 on failure forces Claude to fix before continuing |
+| `cite-or-read` | Every turn end (Stop) | Scans the final assistant message for file references; if a file was named as fact but never Read/Grep'd this turn, emits a non-blocking WARN — surfaces unsourced claims so they can't ship silently |
+| `honesty` (skill) | Every response | Forbids unsourced claims about code, requires "I don't know — checking" when no source was read, requires evidence before "done" |
 | `stop-gate` | Every turn end | Blocks until mandatory gate passes (opt-in) |
 | Stack skills | Relevant file edits | Flutter/web/api rules loaded automatically by file type |
 | `work-principles` | Every non-trivial task | Detect→Check→Suggest, non-destructive reasoning |
@@ -165,7 +170,7 @@ USER ASK
 
 core/skills/
   core-hooks/                    bash enforcement hooks
-    hooks/                       protect-files · protect-bash · enforce-rules · stop-gate · session-ledger · post-test
+    hooks/                       protect-files · protect-bash · enforce-rules · stop-gate · session-ledger · post-test · cite-or-read
     enforcement/                 per-pack rule registries (JSON)
   core-standards/                engine + universal skills + autonomous pipeline
     commands/                    /full-setup · /spec slash commands
@@ -178,6 +183,7 @@ core/skills/
     skills/mcp-integration/      MCP config reference
     skills/docs-sync/            post-audit doc drift check
     skills/codebase-index/       persistent audit cache keyed by git blob hash
+    skills/honesty/              no unsourced claims; "I don't know — checking" required when no source read; evidence before declaring done
     skills/spec-validator/       challenges spec for gaps; locks acceptance-tests.md
     skills/contracts/            architect-defined contracts; locked before implementation
     skills/challenger/           adversarial review with fresh context (3-round cap)
@@ -235,4 +241,4 @@ scripts/                         compile agents, export utilities
 
 ---
 
-**v0.15.0** · MIT · PRs welcome → [docs/contributing.md](docs/contributing.md)
+**v0.16.0** · MIT · PRs welcome → [docs/contributing.md](docs/contributing.md)

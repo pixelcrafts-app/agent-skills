@@ -5,25 +5,25 @@
     "url": "https://github.com/pixelcrafts-app"
   },
   "metadata": {
-    "description": "Production-grade standards for Claude Code — Flutter, API (NestJS + Prisma), Web (Next.js), Mobile-universal. Install a pack, Claude applies the standards. No CLAUDE.md edits. v0.15.0 adds the autonomous production pipeline: spec → contracts → parallel implementation → integration → adversarial review, with PostToolUse test gate.",
-    "version": "0.15.0"
+    "description": "Production-grade standards for Claude Code — Flutter, API (NestJS + Prisma), Web (Next.js), Mobile-universal. Install a pack, Claude applies the standards. No CLAUDE.md edits. v0.16.0 adds the honesty contract: no unsourced claims about the codebase, evidence required before declaring done, paired with a Stop hook that surfaces violations (cite-or-read).",
+    "version": "0.16.0"
   },
   "plugins": [
     {
       "name": "core-hooks",
       "source": "./core/skills/core-hooks",
-      "description": "Hooks-only plugin. SessionStart surfaces plugin-hook mechanics and (opt-in) a mandatory-skills preamble. PreToolUse blocks edits to secrets, dangerous shell, raw design values in token-managed projects, cold Task/Agent spawns below warmth threshold, and — when enforcement mode is opted in via .claude/enforcement.json — a per-pack rule registry. PostToolUse runs post-test on every Write/Edit/MultiEdit (detects stack, runs related fast tests, exit 2 on failure forces fix before turn proceeds; fail-open on detection errors). Stop hook blocks turn-end until each mandatory pack's gate has passed and verify-state.json has no unresolved tool FAILs.",
-      "version": "0.12.0",
+      "description": "Hooks-only plugin. SessionStart surfaces plugin-hook mechanics and (opt-in) a mandatory-skills preamble. PreToolUse blocks edits to secrets, dangerous shell, raw design values in token-managed projects, cold Task/Agent spawns below warmth threshold, and — when enforcement mode is opted in via .claude/enforcement.json — a per-pack rule registry. PostToolUse runs post-test on every Write/Edit/MultiEdit (detects stack, runs related fast tests, exit 2 on failure forces fix before turn proceeds; fail-open on detection errors). Stop hook blocks turn-end until each mandatory pack's gate has passed and verify-state.json has no unresolved tool FAILs, plus surfaces honesty violations (cite-or-read: factual claims about files not Read/Grep'd in the same turn — non-blocking WARN to stderr).",
+      "version": "0.13.0",
       "category": "core",
-      "tags": ["hooks", "safety", "secrets", "design-tokens", "post-test"]
+      "tags": ["hooks", "safety", "secrets", "design-tokens", "post-test", "honesty"]
     },
     {
       "name": "core-standards",
       "source": "./core/skills/core-standards",
-      "description": "Cross-stack engine, universal skills, and the production autonomous pipeline. Engine: verify-changes, codebase-index, planning, universal-rules, verification, auth-flows, craft-config, mcp-integration, docs-sync, subagent-brief. Autonomous pipeline (single prompt → verified delivery): spec-validator (challenges spec, locks acceptance-tests.md), contracts (architect-defined interfaces locked before any code), challenger (fresh-context adversarial review, 3-round cap), contract-tests (tests generated from contracts, implementer-locked), integration (wires implementations, runs acceptance tests, 5-attempt fix loop), full-setup (one-shot project layer generator). Slash commands: /full-setup, /spec.",
-      "version": "0.5.0",
+      "description": "Cross-stack engine, universal skills, and the production autonomous pipeline. Engine: verify-changes, codebase-index, planning, universal-rules, verification, auth-flows, craft-config, mcp-integration, docs-sync, subagent-brief. Honesty contract (always-loaded): no unsourced claims about the codebase, evidence-before-done — paired with the cite-or-read Stop hook in core-hooks. Autonomous pipeline (single prompt → verified delivery): spec-validator (challenges spec, locks acceptance-tests.md), contracts (architect-defined interfaces locked before any code), challenger (fresh-context adversarial review, 3-round cap), contract-tests (tests generated from contracts, implementer-locked), integration (wires implementations, runs acceptance tests, 5-attempt fix loop), full-setup (one-shot project layer generator). Slash commands: /full-setup, /spec.",
+      "version": "0.6.0",
       "category": "core",
-      "tags": ["skills", "cross-stack", "engine", "standards", "orchestration", "auth", "autonomous", "contracts", "spec"]
+      "tags": ["skills", "cross-stack", "engine", "standards", "orchestration", "auth", "autonomous", "contracts", "spec", "honesty"]
     },
     {
       "name": "flutter-standards",
