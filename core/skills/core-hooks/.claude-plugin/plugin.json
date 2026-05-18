@@ -1,7 +1,7 @@
 {
   "name": "core-hooks",
   "version": "0.13.0",
-  "description": "Hooks-only plugin. SessionStart surfaces plugin-hook mechanics and the optional mandatory-skills preamble. PreToolUse blocks edits to secrets, dangerous shell, and — when enforcement mode is opted in via .claude/enforcement.json — a per-pack rule registry, plus an opt-in plan-required gate that blocks the Nth unique non-trivial file edit per session until a craft:plan block exists in the conversation. PostToolUse runs post-test on every Write/Edit/MultiEdit (detects stack, runs related fast tests, exit 2 on failure forces fix). Stop hook blocks turn-end until each mandatory pack's gate command has passed AND surfaces honesty violations (cite-or-read: factual claims about files not Read/Grep'd in the same turn — non-blocking WARN). Pure bash + jq.",
+  "description": "Hooks-only plugin. SessionStart surfaces plugin-hook mechanics and the optional mandatory-skills preamble. PreToolUse blocks edits to secrets, dangerous shell, and — when enforcement mode is opted in via .claude/enforcement.json — a per-pack rule registry, plus an opt-in plan-required gate that blocks the Nth unique non-trivial file edit per session until a craft:plan block exists in the conversation. PostToolUse runs post-test on every Write/Edit/MultiEdit (detects stack, runs related fast tests, exit 2 on failure forces fix). Stop hook blocks turn-end until each mandatory pack's gate command has passed AND surfaces honesty violations (cite-or-read: factual claims about files not Read/Grep'd in the same turn — non-blocking WARN by default, opt-in BLOCK via honesty_blocking) AND nudges/blocks if N+ files were edited without a verification pass (post-edit-verify: opt-in via verify_required true|strict). Pure bash + jq.",
   "author": {
     "name": "pixelcrafts",
     "url": "https://github.com/pixelcrafts-app"
@@ -74,6 +74,10 @@
           {
             "type": "command",
             "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/cite-or-read.sh"
+          },
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/post-edit-verify.sh"
           }
         ]
       }
