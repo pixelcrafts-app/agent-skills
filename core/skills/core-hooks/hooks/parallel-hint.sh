@@ -80,7 +80,7 @@ cat <<'EOF'
 {
   "hookSpecificOutput": {
     "hookEventName": "UserPromptSubmit",
-    "additionalContext": "[parallel-hint] The task wording suggests multi-file or multi-domain scope. Before starting inline work, consult core-standards:planning Step 0 (the routing decision: inline vs parallel agents vs sequential agents). If the route is agents, write the warm briefs per core-standards:subagent-brief BEFORE any Edit/Write — agent briefs first, then spawn, then inline continues with their findings. Going inline by reflex on a task this wide is the failure mode this hint exists to prevent."
+    "additionalContext": "[parallel-hint] The task wording suggests multi-file or multi-domain scope. Two paths to consider:\n\n1. **Explicit fan-out** — run `/parallelize <task>` to apply the partition + warm-brief + batched-spawn protocol (core-standards:commands/parallelize). One keystroke, follows planning:Step 0 + subagent-brief end-to-end.\n\n2. **Implicit** — write the plan first per core-standards:planning Step 0 (the routing decision: inline vs parallel agents vs sequential agents). If the route is agents, write the warm briefs per core-standards:subagent-brief BEFORE any Edit/Write — agent briefs first, then spawn, then inline continues with their findings.\n\nGoing inline by reflex on a task this wide is the failure mode this hint exists to prevent."
   }
 }
 EOF
