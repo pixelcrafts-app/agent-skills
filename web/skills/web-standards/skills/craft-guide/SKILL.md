@@ -1,9 +1,33 @@
 ---
 name: craft-guide
-description: Apply when designing, reviewing, or polishing web UI — color + contrast + harmony, spacing rhythm, type scale, font loading, shadow and radius scales, motion choreography, state design (all variants), responsive density by app type, safe-area handling, aesthetic coherence, iconography, chrome details, theme discipline, microcopy, brand moments. Auto-invoke whenever generating or evaluating Next.js / React / Tailwind / shadcn UI for craft quality. Enforces universal formulas — never imposes brand values.
+description: Apply when designing, reviewing, or polishing web UI — color + contrast + harmony, spacing rhythm, type scale, font loading, shadow and radius scales, motion choreography, state design (all variants), responsive density by app type, safe-area handling, aesthetic coherence, iconography, chrome details, theme discipline, microcopy, brand moments. Cross-framework (Next.js, Remix, SvelteKit, Astro, Nuxt, vanilla); examples use Tailwind / shadcn idioms but the rules are framework-neutral. This is the Tier 2 project-contract skill — pairs with craft-invariants (Tier 1 universals) and craft.json features.aesthetic (Tier 3 taste opt-in).
+requires:
+  - craft-invariants   # Tier 1 industry universals — WCAG, CSS specs, Bringhurst — PASS/FAIL there
+  - craft-config       # craft.json features.aesthetic schema for Tier 3 opt-in
 ---
 
 # Premium Web Craft Guide
+
+---
+
+## How `verify-changes` reads this file (three tiers)
+
+This file is the **Tier 2 project contract**. Read alongside two siblings:
+
+| Tier | Where | What it enforces | Verdict |
+|---|---|---|---|
+| **1 — Invariants** | `craft-invariants` | WCAG, CSS specs, Bringhurst typography, rendering-pipeline performance — universal across every web project | PASS / FAIL / N_A |
+| **2 — Contract** | this file (`craft-guide`) | The project's design system: declared base unit, declared scales, declared tokens. Enforces *that the declaration exists and is used everywhere*; the specific values are the project's call. | PASS / FAIL / N_A on declaration + adherence |
+| **3 — Taste** | `craft.json features.aesthetic` opt-in | Aesthetic specifics (claymorphism numbers, bento grid sizing, utility-brutalist values, premium-signals catalog entries) | INFO unless explicitly promoted to enforced via craft.json |
+
+**Practical implications across the rule index below:**
+
+- §0 specific numeric values (8px base, 1280px desktop, 1200px max-width, etc.) are **recommended defaults** that ship with this skill. They are the contract's *default content*. A project declares its own values via tokens; what's enforced is that one base unit / breakpoint set / max-width set is declared and **every code value resolves to it**.
+- §6 motion durations (micro 150–250 / macro 300–500 / page 500–800 ms) are **recommended bands**. Projects declare named duration tokens; what's enforced is that durations come from tokens, not literals.
+- §9 aesthetic-specific specs (claymorphism / bento / glass numbers) are **Tier 3 — INFO only** unless the project's `craft.json features.aesthetic.<name>` promotes them.
+- §11.8 `-webkit-font-smoothing: antialiased` is a **Tier 3 preference** — not all premium products use it; some prefer subpixel-AA. Demoted from rule.
+
+Rules retain their `§N.M` IDs for stable referencing. Verification iterates them as-is; only the *verdict* differs per tier.
 
 ---
 
@@ -11,17 +35,17 @@ description: Apply when designing, reviewing, or polishing web UI — color + co
 
 This is the canonical enumeration of every enforceable rule in this guide. Each rule has a stable `§N.M` ID. Audit skills (e.g. `verify-changes`, `pre-ship`) iterate this list. Prose sections below carry the full context — the index is the machine-readable entrypoint. When a rule is split, use `§N.M.a` / `§N.M.b` rather than renumbering; IDs are stable.
 
-**§0 Visual System Foundations** — the concrete numeric baseline every other section references.
-- §0.1 Base unit: 8px — every spacing value is a multiple of 4 or 8
-- §0.2 Breakpoints: mobile 375px / tablet 768px / desktop 1280px / wide 1536px
-- §0.3 Content max-widths: standard 1200px / reading 720px / focused (auth, dialog) 480px
-- §0.4 Column gutters: 16px mobile / 24px tablet / 32px desktop
-- §0.5 Typography scale uses rem — exact step values defined in §0 prose; no intermediates invented between steps
+**§0 Visual System Foundations** — the project's declared baseline every other section references. Tier 2 contract: declaration is enforced; specific values are the project's call.
+- §0.1 Project declares ONE base unit (commonly 4 or 8); every spacing value is a multiple of it. Recommended default: 8px with 4px half-steps.
+- §0.2 Project declares a breakpoint set (typically 3–5 breakpoints) with monotonically-increasing min-widths. Use only declared breakpoints. Recommended default: 375 / 768 / 1280 / 1536 px.
+- §0.3 Project declares content max-widths per surface mode (standard / reading / focused). Use only declared values. Recommended defaults: 1200 / 720 / 480 px.
+- §0.4 Project declares responsive column gutters per breakpoint. Use declared values. Recommended defaults: 16 / 24 / 32 px.
+- §0.5 Typography scale uses rem (not px) for font-size — exact step values declared in tokens; no intermediates invented between steps
 - §0.6 No size invented between scale steps — weight carries hierarchy within a step gap
-- §0.7 Color slots: exactly 1 primary, 1 secondary, neutral 50–900 scale, 4 semantic states only
-- §0.8 Elevation: 3 levels only (flat / card / dropdown); dark mode replaces shadows with 1px border at 12% white opacity
-- §0.9 Interactive states: hover shifts surface 8%; focus is 2px outline / 2px offset / primary color; active is scale(0.98) 80ms; disabled is 40% opacity + cursor:not-allowed + pointer-events:none
-- §0.10 Dark mode surfaces: no pure black — warm-neutral dark (zinc-900 or equivalent); text at 87% opacity or warm off-white (not #fff); higher elevation = lighter surface (inverse of light mode)
+- §0.7 Project palette declares role tokens (primary, secondary, neutral steps, semantic states). Recommended default count: 1 primary / 1 secondary / neutral 50–900 / 4 semantic. Project may declare more if the design needs it; what's enforced is the *role-token shape*, not the specific count.
+- §0.8 Project declares an elevation scale (≥ 2 levels). What each level means is the project's call — shadow set, border-tint, or surface luminance shift. Recommended default: 3 levels (flat / card / dropdown); dark mode prefers border-tint over shadow.
+- §0.9 Project declares an interactive-state contract: every interactive role has declared treatments for hover, focus-visible, active, and disabled. Recommended defaults: hover shifts surface ~8%; focus = 2px outline / 2px offset / primary; active = scale(0.98) ~80ms; disabled = ~40% opacity + cursor:not-allowed + pointer-events:none. Tier 3 — exact percentages opt in via `craft.json features.aesthetic`.
+- §0.10 Dark mode surfaces tint toward the brand neutral (not pure `#000`); text contrast meets craft-invariants R1; higher elevation = lighter surface (inverse of light mode). Specific opacities and surface hex values come from project tokens — Tier 3.
 
 **§1 Color**
 - §1.1 Contrast — body text ≥ 4.5:1
@@ -74,12 +98,12 @@ This is the canonical enumeration of every enforceable rule in this guide. Each 
 - §5.4 Radius scale matches aesthetic (brutalist = 0, claymorphism = XL, etc.)
 
 **§6 Motion**
-- §6.1 Durations within range (micro 150–250 / macro 300–500 / page 500–800ms)
+- §6.1 Project declares a named motion-duration scale (≥ 3 tiers); use named tokens, not literal ms. Recommended default ranges: micro 150–250ms / macro 300–500ms / page 500–800ms.
 - §6.2 Exit slightly faster than entry
 - §6.3 Entry = ease-out, exit = ease-in
-- §6.4 No default `ease` curve
-- §6.5 Only `transform` + `opacity` animated (no width / height / top / left)
-- §6.6 `prefers-reduced-motion` respected
+- §6.4 No default `ease` curve — project declares named easing tokens
+- §6.5 Only `transform` + `opacity` animated on hot paths (no width / height / top / left) — see craft-invariants R5
+- §6.6 `prefers-reduced-motion` respected — see craft-invariants R4
 - §6.7 3-layer stack — not everything animating at once
 
 **§7 State Design**
@@ -109,11 +133,11 @@ This is the canonical enumeration of every enforceable rule in this guide. Each 
 - §8.8 Wide-screen content width constrained (≤ 1920px)
 
 **§9 Aesthetic Coherence**
-- §9.1 Single aesthetic committed (not mixed)
+- §9.1 Single aesthetic committed (not mixed) — declare in `craft.json features.aesthetic.active`
 - §9.2 Aesthetic-specific specs honored (per the chosen aesthetic's sub-list below)
 - §9.3 If glassmorphism — text legibility strategy present (solid layer OR background-opacity ≥ 0.5)
 - §9.4 If glassmorphism — `prefers-reduced-transparency` fallback present
-- §9.5 Per-aesthetic numeric specs within range (blur, opacity, radius, shadow) — see §9 prose; Claymorphism = 40–60px radius + triple shadow; Bento = 16–24px; Glass = blur 8–24px + bg-opacity 0.1–0.3
+- §9.5 Per-aesthetic numeric specs (claymorphism radius / bento gap / glass blur) are **Tier 3 — INFO only** unless the project's `craft.json features.aesthetic.<name>.enforced_signals[]` promotes them. Recommended ranges in §9 prose are starting points, not universal rules.
 
 **§10 Iconography**
 - §10.1 One icon family app-wide
@@ -130,7 +154,7 @@ This is the canonical enumeration of every enforceable rule in this guide. Each 
 - §11.5 `caret-color` set for inputs
 - §11.6 `cursor: pointer` on all clickable non-links
 - §11.7 Inline loading (button spinner / in-field) not full-page
-- §11.8 `-webkit-font-smoothing: antialiased` on body
+- §11.8 `-webkit-font-smoothing` setting matches the project's text-rendering choice (antialiased OR subpixel-antialiased — both correct, project picks). **Tier 3** — not enforced unless promoted.
 - §11.9 Images — fixed aspect ratios, lazy-loaded, blur-up placeholder
 
 **§12 Accessibility**
