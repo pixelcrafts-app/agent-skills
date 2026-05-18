@@ -395,14 +395,14 @@ OUTPUT
 
 This makes the state file the trust layer between agents — not the conversation thread. The parent does not need to re-verify the subagent's findings; it reads the evidence directly from the state file.
 
-### 4.2 — Task metadata schema
+### 4.3 — Task metadata schema
 
 Each task's metadata stores:
 - `fails` (array of specific failures — if >15 per task, store top 15 + total count)
 - `suggested_fixes` (for fix phase)
 - `blockers_resolved` (did this task unblock any others?)
 
-### 4.3 — Stop conditions
+### 4.4 — Stop conditions
 
 Stop and report mid-run if:
 - A **CRITICAL** failure is found — concretely: a hardcoded secret committed, a removed-auth-check on a protected route, an env-var reference that no longer exists, a migration containing `DROP COLUMN` / `DROP TABLE` / a new `NOT NULL` without default, a breaking change to an exported public signature. These need user attention before any more audit time is spent.
