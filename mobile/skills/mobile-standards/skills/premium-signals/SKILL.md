@@ -1,13 +1,26 @@
 ---
 name: premium-signals
-description: Apply when building or reviewing mobile UI for premium polish — iOS Liquid Glass, Material You color extraction, bottom sheet detents, haptic timing, scroll-driven animation, button micro-interactions, empty state formula. Overlays craft-guide foundations with market-sourced precise values. Auto-invoke on any screen that must feel native-quality, not cross-platform template.
+description: Reference catalog of precise mobile design values found in shipped premium products (iOS 26 UIKit/SwiftUI, Material You, Things 3, Superhuman iOS, Arc Mobile, Apple Design Award winners). INFO-only — every entry is a documented reference, not an enforced rule. To enforce specific entries for your project, list them in craft.json features.aesthetic.<name>.enforced_signals[].
+verdict_mode: INFO_ONLY
+requires:
+  - verification   # verdict semantics: INFO_ONLY skills never produce FAIL
 ---
 
-# Mobile Premium Signals
+# Mobile Premium Signals (reference catalog)
 
-Rules derived from auditing iOS 26 UIKit/SwiftUI, Material You, Things 3, Superhuman iOS, Arc Mobile, and Apple Design Award winners. Every value was found in a shipped product.
+> **Verdict semantics — read first.** Every value in this file is INFO-only.
+> `verify-changes` does NOT FAIL a project for breaking any of these. They
+> are precise reference values from named shipped products, useful for
+> inspiration or for opt-in enforcement when a project commits to one of
+> these aesthetics.
+>
+> To **enforce** specific entries for a project, declare:
+>   `craft.json features.aesthetic.<name>.enforced_signals: [<section-id>, ...]`
+> Without that declaration, this file is a catalog, not a contract.
 
-Craft-guide provides the foundation rules. This skill provides the precise values that separate platform-quality from generic.
+Values below were found in shipped products — iOS 26 native, Material You, Things 3, Superhuman, Arc Mobile, Apple Design Award winners. A React Native Paper app or a Flutter Material 3 app will deliberately and correctly violate many of them.
+
+Craft-guide provides the foundation rules (PASS/FAIL/N_A). This file provides reference values for the projects that opt into this aesthetic.
 
 ---
 

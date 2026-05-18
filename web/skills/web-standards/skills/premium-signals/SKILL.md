@@ -1,13 +1,26 @@
 ---
 name: premium-signals
-description: Apply when building or reviewing web UI for premium polish — exact shadow formulas, border opacity, dark mode gray calibration, easing curves, typography precision, empty state formula, skeleton shimmer, glassmorphism constraints. Overlays craft-guide foundations with market-sourced precise values from Linear, Vercel, Superhuman, Arc, Raycast. Auto-invoke on any new component or page that must feel handcrafted, not template-generated.
+description: Reference catalog of precise design values found in shipped premium products (Linear, Vercel, Superhuman, Arc, Raycast, Stripe, Things 3). INFO-only — every entry is a documented reference, not an enforced rule. Use for inspiration / opt-in per project, not as universal verdicts. To enforce specific entries for your project, list them in craft.json features.aesthetic.<name>.enforced_signals[].
+verdict_mode: INFO_ONLY
+requires:
+  - verification   # verdict semantics: INFO_ONLY skills never produce FAIL
 ---
 
-# Web Premium Signals
+# Web Premium Signals (reference catalog)
 
-Rules derived from auditing Linear, Vercel, Superhuman, Arc Browser, Raycast, Stripe, Things 3. Every value below was found in a shipped product — not generated from design theory.
+> **Verdict semantics — read first.** Every value in this file is INFO-only.
+> `verify-changes` does NOT FAIL a project for breaking any of these. They
+> are precise reference values lifted from named shipped products, useful
+> for inspiration or for opt-in enforcement when a project explicitly
+> commits to one of these aesthetics.
+>
+> To **enforce** specific entries for a project, declare:
+>   `craft.json features.aesthetic.<name>.enforced_signals: [<section-id>, ...]`
+> Without that declaration, this file is a catalog, not a contract.
 
-Craft-guide provides the foundation rules. This skill provides the precise values that separate premium from template within those rules.
+Values below were found in shipped products — Linear, Vercel, Superhuman, Arc Browser, Raycast, Stripe, Things 3. They are one design lineage's choices, not universal truths. A Material Design 3 app or a brutalist editorial site will deliberately and correctly violate many of them.
+
+Craft-guide provides the foundation rules (PASS/FAIL/N_A). This file provides reference values for the projects that opt into this aesthetic.
 
 ---
 
