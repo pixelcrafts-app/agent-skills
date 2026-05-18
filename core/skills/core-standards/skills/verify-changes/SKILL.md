@@ -60,6 +60,8 @@ If the brief is malformed (missing a required field, unknown dimension name), fa
 
 Before any other phase, manage `.claude/verify-state.json` and load the audit cache.
 
+> See `state-files` for the canonical schema, lifecycle, ownership, and concurrency rules of every `.claude/*` file referenced in this skill.
+
 ### 0.1 — Check for existing state
 
 Read `.claude/verify-state.json` if it exists.

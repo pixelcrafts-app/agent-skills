@@ -21,7 +21,7 @@ These three apply whenever a subagent will read, analyze, or audit files. They a
 
 Before spawning, load `.claude/audit-cache.json` and extract cache hits for the agent's file scope. Include them explicitly in the brief under a `CACHE CONTEXT` section. An agent without cache context re-reads every file from scratch — this is the primary source of token waste in multi-agent work.
 
-See `codebase-index` Multi-agent protocol for the exact extraction and injection format.
+See `codebase-index` Multi-agent protocol for the exact extraction and injection format. See `state-files` for the file's lifecycle and invalidation rules.
 
 ### 2 — Excerpt contract (never name, always paste)
 

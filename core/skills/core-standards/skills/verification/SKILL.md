@@ -20,6 +20,8 @@ Run after completing any task, before reporting done. Two phases — both must p
 
 Before detecting skills, read `.claude/craft.json` if it exists at the project root.
 
+> See `state-files` for which skills own which `.claude/*` files and how they interact.
+
 - `stacks[]` — which skill domains are PROJECT-MANDATORY for this codebase
 - `features{}` — which conditional skills are active (`auth`, `realtime`, `i18n`, etc.)
 - `disabled_rules[]` — rules explicitly opted out (each entry must have a reason; surfaced as INFO in every report)

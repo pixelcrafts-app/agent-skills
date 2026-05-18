@@ -103,7 +103,7 @@ After implementer addresses a BLOCK:
 4. FAIL → BLOCK remains
 
 Maximum 3 rounds. If BLOCK persists after 3 rounds:
-- Write to `.claude/progress.md`:
+- Write to `.claude/progress.md` (see `state-files` for ownership and lifecycle):
   ```
   task <N>: ESCALATED
   reason: challenger BLOCK unresolved after 3 rounds
