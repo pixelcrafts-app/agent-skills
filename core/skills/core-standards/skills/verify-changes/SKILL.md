@@ -317,6 +317,31 @@ Show the plan, then ask *"Proceed?"* The user may adjust scope, drop dimensions,
 
 **The key discipline: between batches, write progress to task metadata (via `TaskUpdate`), not into the running conversation.** Findings that later phases need must live in task metadata, not as quoted evidence in intermediate messages.
 
+### 4.0.0 — Aesthetic loader (runs once per invocation, before tools or batches)
+
+Three-tier verdict architecture (per `core-standards:craft-config` `features.aesthetic` schema):
+
+- **Tier 1 — Invariants.** Industry-cited rules in `*/craft-invariants/SKILL.md`. Always produce PASS / FAIL / N_A. Never coerced.
+- **Tier 2 — Project contract.** Rules in `craft-guide` and similar that enforce *declaration + adherence*. Produce PASS / FAIL / N_A based on whether the project declares its tokens and uses them.
+- **Tier 3 — Taste.** Aesthetic-specific recipes in `*/premium-signals/`, `design-laws` GUIDES section, and any rule whose body text contains "Tier 3" or "INFO only" / "INFO-only". Default verdict is coerced to INFO unless opted in via `craft.json`.
+
+Read `.claude/craft.json` once per run. Build the **aesthetic registry**:
+
+```
+aesthetic = {
+  active:      string | null  — from features.aesthetic.active
+  promoted:    set<rule-id>   — from definitions[active].enforced_guides[]
+                              + definitions[active].enforced_signals[]
+  bans:        set<pattern>   — from definitions[active].bans[]
+}
+```
+
+If `features.aesthetic.active` is absent or null: `aesthetic = { active: null, promoted: ∅, bans: ∅ }`. No promotions, no bans.
+
+Cache the registry in memory for the entire run. Steps 4.1.0.5, 4.1.4.5, and 4.1.4.6 below all read from it.
+
+---
+
 ### 4.0 — Tool-first pass (runs once per verify-changes invocation, before any batch)
 
 Before any AI judgment, run the project's own tools. These produce binary verdicts that do not require interpretation — they are the ground truth for what they cover.
@@ -355,6 +380,8 @@ For each batch:
 1. **Check cache and verify-state.json before starting** — two checks, in order:
    - **Audit cache** (`codebase-index` Step 2): for each file in this batch, compare current blob hash against `.claude/audit-cache.json`. If the hash matches AND this dimension is in `audited_dimensions` → **cache hit**: inject cached findings into `verify-state.json` with `source: "cache"` and skip this file entirely. Do not read the file, do not apply rules.
    - **verify-state.json**: read the flat `findings` array. If any `(rule, file)` pair is already recorded by a tool (`source: "tool"`), skip that concern — the tool verdict is final. For AI-judgment findings already recorded, also skip. This prevents duplicate work within the current run.
+
+   1a. **Skill verdict_mode pre-check.** After loading the dimension's `SKILL.md`, read its frontmatter. If `verdict_mode: INFO_ONLY` is present, mark this dimension as **forced-INFO**: every rule iterated below produces verdict `INFO` (regardless of whether the rule's condition is met or not). Exception: rules whose name is in the aesthetic registry's `promoted` set (Step 4.0.0) retain their original verdict — they're explicitly promoted by the project's active aesthetic.
 2. **Mark batch tasks in_progress** via TaskUpdate
 3. **Load only what's needed** — read the files in this batch, load only the standards skill relevant to this batch's dimension. Don't pre-load the whole pack.
 4. **Iterate rule-by-rule — only rules tools cannot cover** — for every rule in the loaded dimension's SKILL.md, produce one record per (rule × file):
@@ -362,8 +389,25 @@ For each batch:
    - **Evidence** — a direct quote from the file with `path:line`, or the literal string `no occurrence` if the rule does not apply to anything in this file.
    - **Verdict** — exactly one of `PASS`, `FAIL`, `N_A`, `INFO`, `REVIEW`, or `CONFLICT` — see the Verdict types section for definitions. `N_A` **requires** a one-line reason (e.g. "file has no color tokens — rule about color harmony doesn't apply"). Bare `N_A` without reason is invalid and must be re-run.
    - **Suggested fix** — only on `FAIL`. One line. The minimum change that resolves the rule.
-   
+
+   **Verdict coercion order (applied after the raw verdict is computed):**
+
+   a. If the dimension is forced-INFO (per step 1a above) AND the rule's name is **not** in `aesthetic.promoted`: coerce verdict to `INFO`.
+   b. Else if the rule body contains the text marker `Tier 3` or `INFO only` / `INFO-only` AND the rule's name is **not** in `aesthetic.promoted`: coerce verdict to `INFO`. This is the prose-level fallback for skills that haven't migrated to frontmatter `verdict_mode`.
+   c. Else if the rule's name **is** in `aesthetic.promoted`: keep the raw verdict (this is the opt-in promotion path — taste rule promoted to enforced because the project explicitly committed to this aesthetic).
+   d. Otherwise: keep the raw verdict.
+
    Walk every rule in order. Never skip a rule because it "seems unrelated" — record `N_A` with reason instead. Never stop mid-dimension on the first FAIL; collect them all.
+
+4a. **Bans check** (runs once per batch, after rule iteration). For each pattern in the aesthetic registry's `bans` set:
+   - grep the batch's changed files for the pattern (literal string match, or regex if the pattern is wrapped in `/.../`)
+   - any match → produce a FAIL record with:
+     - rule = `aesthetic-ban:<pattern-key>`
+     - evidence = `match at <file>:<line>`
+     - suggested_fix = `your active aesthetic ('<active>') forbids '<pattern-key>'; see craft.json features.aesthetic.<active>.bans`
+   - source = `ai_judgment` (the runner could lift this to `tool` if a deterministic linter implements the pattern)
+
+   Bans produce FAIL records even when the containing skill is `verdict_mode: INFO_ONLY` — they are an explicit project commitment via `craft.json`.
 5. **Record results in task metadata**:
    ```
    TaskUpdate: status=completed, metadata={ pass_count, fail_count, fails: [{ rule, file, line, evidence, suggested_fix }] }
