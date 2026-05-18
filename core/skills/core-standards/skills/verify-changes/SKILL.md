@@ -1,6 +1,10 @@
 ---
 name: verify-changes
 description: Generic cross-stack verification workflow. Apply whenever the user says "verify my changes", "cross-check before confirming", "audit what I did", or ends a non-trivial chunk of work. Works on web, mobile, API, DB — reads whatever SKILL.md standards files are installed and applies them. Asks scope, builds a dependency-aware TODO tree, verifies in batches to preserve context, reports per-dimension pass/fail. Pure prompt — no hooks, no external tools, no indexing infrastructure. Uses built-in Read / Grep / Glob / Edit plus TaskCreate for persistence.
+requires:
+  - codebase-index   # Phase 0 loads .claude/audit-cache.json per its Step 1; Phase 4 writes per its Step 3
+  - subagent-brief   # delegating a dimension to a subagent uses its warm-brief contract
+  - craft-config     # detects active stacks / features / disabled_rules from .claude/craft.json
 ---
 
 # Verify Changes — Generic Cross-Stack Workflow

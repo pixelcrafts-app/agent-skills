@@ -1,6 +1,8 @@
 ---
 name: challenger
 description: Adversarial review protocol. Challenger receives fresh context — never saw the implementation process. Reads only the output and asks what is wrong with it. Blocks on critical findings. Feeds findings to the Test Writer. Defeats done-delusion and hallucintion compounding.
+requires:
+  - subagent-brief   # "Receives a CLEAN context window" = a fresh subagent spawn governed by warm-brief discipline
 ---
 
 # Challenger

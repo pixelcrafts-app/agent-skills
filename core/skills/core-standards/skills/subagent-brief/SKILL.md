@@ -1,6 +1,8 @@
 ---
 name: subagent-brief
 description: Read this BEFORE calling the Task or Agent tool. Governs three decisions — should I spawn at all, how many agents, what goes in the prompt. Defines the warm-brief format and warmth scoring that determines whether a spawn is allowed.
+requires:
+  - codebase-index   # cache pass-through + write-back contracts reference this skill's protocol
 ---
 
 # Subagent Brief Discipline

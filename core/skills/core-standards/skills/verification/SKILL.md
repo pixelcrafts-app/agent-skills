@@ -1,6 +1,9 @@
 ---
 name: verification
 description: Apply after completing any delivery task — Flutter, web, API, or any stack. Verifies two things before reporting done: (1) the plan was executed completely, (2) the result follows all applicable installed skill guidelines. Universal — not stack-specific.
+requires:
+  - craft-config              # Step 0 reads .claude/craft.json for stacks/features/disabled_rules
+  - universal-rules:security  # Tier 1 ALWAYS-MANDATORY
 ---
 
 # Verification
