@@ -1,6 +1,9 @@
 ---
 name: full-setup
-description: One-command project setup. Run /full-setup in any project — new or existing. Detects stack and domain, generates the complete project layer (CLAUDE.md, .claude/rules/, agent files, settings.json hook wiring, craft.json, enforcement.json). After /full-setup, the project is ready for autonomous production development.
+description: One-command project setup. Run /full-setup in any project — new or existing. Detects stack and domain, asks once for an enforcement profile (Light / Standard / Strict), generates the complete project layer (CLAUDE.md, .claude/rules/, agent files, craft.json, enforcement.json with all new gates — plan_required, verify_required, honesty_blocking, agent_traffic_log, parallel_hint). Hook wiring is automatic via the core-hooks plugin — no settings.json edits required. After /full-setup, the project is ready for autonomous production development.
+requires:
+  - craft-config   # craft.json + enforcement.json schemas
+  - planning       # Step 0 routing — referenced in generated CLAUDE.md
 ---
 
 # Full Setup
@@ -339,33 +342,91 @@ Read core-standards:integration for the full protocol and context injection form
 
 ### `enforcement.json`
 
+**Before writing:** ask the user once which enforcement profile to use. Default to **Standard** if user says "just go" / "use default."
+
+```
+Enforcement profile?
+  [a] Light   — plan_required only (recommended for adoption)
+  [b] Standard — plan strict + verify warn (recommended for new projects)
+  [c] Strict   — plan strict + verify strict + honesty blocking (recommended for production)
+```
+
+Write the corresponding shape:
+
+**Light** (`plan_required: true`, defaults otherwise):
 ```json
 {
   "mandatory": [<selected packs from Step 1>],
-  "gate_required": true
+  "gate_required": true,
+  "plan_required": true,
+  "plan_threshold": 3
 }
 ```
 
-### `settings.json` — add PostToolUse hook wiring
+**Standard** (recommended default for new projects):
+```json
+{
+  "mandatory": [<selected packs from Step 1>],
+  "gate_required": true,
+  "plan_required": "strict",
+  "plan_threshold": 3,
+  "verify_required": true,
+  "verify_threshold": 3,
+  "honesty_blocking": false,
+  "agent_traffic_log": true,
+  "parallel_hint": true
+}
+```
 
-Merge into existing `.claude/settings.json`:
+**Strict** (production hardening):
+```json
+{
+  "mandatory": [<selected packs from Step 1>],
+  "gate_required": true,
+  "plan_required": "strict",
+  "plan_threshold": 3,
+  "verify_required": "strict",
+  "verify_threshold": 3,
+  "honesty_blocking": true,
+  "agent_traffic_log": true,
+  "parallel_hint": true
+}
+```
+
+| Field | What it gates (see `core-hooks` README for full semantics) |
+|---|---|
+| `plan_required` | `true` = plan-presence; `"strict"` = plan-presence + routing-decision shape |
+| `plan_threshold` | unique non-trivial files before plan is required (default 3) |
+| `verify_required` | `true` = warn after multi-file edits without verify; `"strict"` = block |
+| `verify_threshold` | unique non-trivial files before verify is required (default 3) |
+| `honesty_blocking` | `true` = unsourced claims block Stop; `false` = warn only |
+| `agent_traffic_log` | logs every Agent/Task spawn to `.claude/agent-traffic.log` |
+| `parallel_hint` | UserPromptSubmit nudge on multi-file task wording |
+
+**Aesthetic enforcement (Tier 3 opt-in)** — do NOT write a default `features.aesthetic` block. Aesthetic is a design commitment, not a code-detectable fact. If the project later commits to a specific aesthetic (soft-clay / utility-brutalist / Material 3 / etc.), the user adds the block manually per `core-standards:craft-config`. Document this in the inline confirmation step ("If you commit to an aesthetic later, see craft-config skill for the schema").
+
+### `settings.json` — hook wiring is automatic via the core-hooks plugin
+
+You do NOT need to write hook entries here. The `core-hooks` plugin's own `plugin.json` registers every hook (SessionStart, UserPromptSubmit, PreToolUse, PostToolUse, Stop) at the plugin level. When `core-hooks@pixelcrafts` is in `enabledPlugins`, Claude Code wires all 13 hooks automatically.
+
+If you want to add project-specific PRE-hooks that run BEFORE the core-hooks (rare), merge them into `.claude/settings.json`:
+
 ```json
 {
   "hooks": {
-    "PostToolUse": [
+    "PreToolUse": [
       {
-        "matcher": "Write|Edit|MultiEdit",
+        "matcher": "Edit|Write|MultiEdit",
         "hooks": [
-          {
-            "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/post-test.sh"
-          }
+          { "type": "command", "command": "bash ${CLAUDE_PROJECT_DIR}/.claude/hooks/your-project-hook.sh" }
         ]
       }
     ]
   }
 }
 ```
+
+Otherwise leave `.claude/settings.json` minimal — the plugin's hooks cover the standard contract.
 
 ### `.gitignore` additions
 
@@ -385,8 +446,9 @@ Note: `progress.md` is a session artifact. It changes every session and must not
 ```
 /full-setup complete — <Project Name>
 
-Stack detected:    <stacks>
-Pack selection:    <packs>
+Stack detected:        <stacks>
+Pack selection:        <packs>
+Enforcement profile:   <Light | Standard | Strict>
 
 Generated:
   CLAUDE.md                          ✓
@@ -394,11 +456,29 @@ Generated:
   .claude/rules/quality.md           ✓
   .claude/agents/ (5 agents)         ✓
   .claude/craft.json                 ✓
-  .claude/enforcement.json           ✓
-  settings.json — hooks wired        ✓
+  .claude/enforcement.json           ✓  (with <profile> gates)
   .gitignore — session artifacts     ✓
 
-Ready. Run /spec "<your goal>" to begin.
+Hooks (from core-hooks plugin, no settings.json wiring needed):
+  SessionStart:     rules-discipline · enforcement-preamble
+  UserPromptSubmit: parallel-hint
+  PreToolUse:       protect-files · protect-bash · enforce-rules · plan-required · agent-traffic
+  PostToolUse:      post-test · agent-traffic
+  Stop:             stop-gate · cite-or-read · post-edit-verify
+
+Active gates from your enforcement.json:
+  <list the gates that are active per profile — e.g.>
+  - plan_required: "strict"  → blocks 3rd+ file edit until plan+routing
+  - verify_required: true    → warns after multi-file edits without verify
+  - parallel_hint: true       → nudges toward /parallelize on broad tasks
+  - agent_traffic_log: true   → logs Agent/Task spawns to .claude/agent-traffic.log
+
+Ready. Run /spec "<your goal>" to begin — or /parallelize "<broad task>" for fan-out.
+
+Note: if you later commit to a specific design aesthetic (soft-clay,
+utility-brutalist, Material 3, etc.), see core-standards:craft-config
+for the features.aesthetic schema to promote Tier 3 taste rules to
+enforced for this project.
 ```
 
 ---
