@@ -47,17 +47,37 @@ A skill is just Markdown, so the same one works across **Claude Code, Cursor, Co
 
 ## The skills — 63 of them
 
-| Pack | What the agent learns |
-|------|-----------------------|
-| **web** (13) | Next.js patterns, the craft-guide design system, premium signals, production-readiness, i18n |
-| **flutter** (9) | Dart/widget engineering, forms, performance budgets, accessibility, observability |
-| **api** (6) | NestJS + Prisma discipline, REST design, a code-quality audit, websockets, migrations |
-| **mobile** (4) | Cross-platform craft, design tokens, precise iOS/Material values |
-| **design** (5) | Design laws, WCAG 2.2, information architecture, brand research |
-| **core** (22) | The engine — planning, verification, honesty, the spec→contracts→tests→integration pipeline, universal rules |
-| **claude** (4) | Claude-only: `/full-setup`, context-budget, strategic-compact, docs-sync |
+Each skill is a focused `SKILL.md` your agent loads when it's relevant. To show what "a skill" actually means — **`code-quality`** (api) alone holds your agent to: every route guarded or explicitly `@Public`, DTOs validated, zero `as any`, no `console.log` in feature code, tests for the happy path *and* auth/validation failures — then a Detect→Check→Suggest pass on rate limiting, idempotency, webhook verification, graceful shutdown, health endpoints, and DB-pool sizing. That's **one** of 63.
 
-Browse every skill → **[docs/skills/catalog.md](docs/skills/catalog.md)**.
+### web (13) — Next.js + Tailwind + shadcn
+- **nextjs** — App Router, Server Components by default, RSC/client boundary pushed deep, structured React Query keys, RHF + Zod, no barrel files, no `any`/`as`
+- **craft-guide** — the design-system contract (§0–§15): color + contrast + harmony, spacing rhythm, type scale, motion, every UI state, theme discipline
+- **craft-invariants** — WCAG / CSS / Bringhurst universals, PASS/FAIL
+- **premium-signals** — exact market values (2-layer shadows, OKLCH dark-gray scale, expo-out easing, tabular-nums)
+- **taste**, **performance**, **production-readiness** (§R1–R10), **i18n**
+- commands: `/pre-ship` `/premium-check` `/extract-tokens` `/theme-audit` `/aesthetic-coherence`
+
+### flutter (9)
+- **engineering** (DRY, single source of truth, data pipeline), **accessibility** (Semantics, contrast, 48dp targets, text scaling), **performance** (16ms frame budget, isolates, decode-at-size), **forms**, **observability** (one logger, PII discipline) — commands: `/app-audit` `/scaffold` `/scan`
+
+### api (6) — NestJS + Prisma
+- **nestjs** (thin controllers → services → repos, validated DTOs), **code-quality** (the audit above), **api-design** (REST semantics, pagination, errors), **cross-stack-contracts**, **websockets**, **db-migrations**
+
+### mobile (4) — Flutter / RN / SwiftUI / Compose
+- **craft-guide** (IA, density, navigation continuity), **craft-invariants** (HIG/Material/60fps, PASS/FAIL), **design-tokens** (per-framework violation patterns), **premium-signals** (iOS 26 / Material You exact values)
+
+### design (5) — platform-agnostic
+- **design-laws** (perceptual color, type scale + anti-AI-slop tests), **accessibility** (WCAG 2.2 across Web/iOS/Android), **information-architecture**, **brand-research**, **creative-direction**
+
+### core (22) — the cross-stack engine, applies everywhere
+- **how the agent works**: planning (route + plan before code), verification & verify-changes (adversarial, tool-evidence required), honesty (cite `file:line`, run the test before "done"), subagent-brief, universal-rules, external-tools
+- **autonomous pipeline**: spec-validator → contracts → contract-tests → integration → challenger (each phase locked before the next)
+- plus auth-flows, hexagonal-architecture, docker-patterns, codebase-onboarding, ADRs, state-files, craft-config
+
+### claude (4) — Claude-only
+- `/full-setup` (bootstrap a project), context-budget, strategic-compact, docs-sync
+
+Every skill, with when each fires → **[docs/skills/catalog.md](docs/skills/catalog.md)**.
 
 ---
 
