@@ -1,155 +1,30 @@
 ---
 name: craft-invariants
-description: Tier 1 universal rules for web UI — industry standards (WCAG, WHATWG, CSS specs, Bringhurst typography) that hold for every web project regardless of brand, aesthetic, framework, or design system. Every rule is citation-backed and produces PASS/FAIL/N_A. Anything that is a project's choice (base unit, breakpoints, color palette, type scale specifics) belongs in craft-guide (Tier 2 — project contract), not here.
+description: Tier-1 universal web UI rules — industry standards (WCAG, WHATWG, CSS specs, Bringhurst) that hold for every project regardless of brand/aesthetic/framework. Citation-backed, PASS/FAIL/N_A. Project choices (base unit, breakpoints, palette, type scale) live in craft-guide (Tier-2), not here.
 requires:
-  - verification   # verdict semantics — these are PASS/FAIL rules, not INFO
+  - verification
 ---
 
-# Web Craft Invariants — Tier 1
+# Web Craft Invariants (Tier 1)
 
-> Every rule below is universal across web projects. They are not the
-> author's taste. Each has a published standard or measurable performance
-> fact behind it.
->
-> Where this skill ends and `craft-guide` begins: invariants live here,
-> *contracts* (the project's declared base unit, breakpoint set, color
-> palette, type scale, motion scale) live in `craft-guide`. If you find
-> yourself prescribing a specific value (8px, 1280px, #0D0D0D), it belongs
-> in the project's tokens, not in this file.
+> Universal, not taste — each rule has a published standard or measurable performance fact. Iterated by `verify-changes` as PASS/FAIL/N_A (never INFO). Disabling one needs a documented reason in `craft.json.disabled_rules[]`. If you're prescribing a specific value (8px, #0D0D0D), it belongs in tokens (`craft-guide`), not here. **If you can load only one UI skill, load this.**
 
-## Verdict semantics
+- **R1 Contrast (WCAG 1.4.3/1.4.11):** body ≥4.5:1, large (≥18pt/14pt-bold) ≥3:1, non-text UI ≥3:1. Light and dark are independent checks. Verify: axe-core/pa11y/DevTools.
+- **R2 Tap targets ≥44×44 CSS px** (WCAG 2.5.5) — extend hit area with padding even if visual is smaller.
+- **R3 Color never the sole state signal** (WCAG 1.4.1) — pair with icon/label/shape/position. Verify: grayscale screenshot.
+- **R4 Respect `prefers-reduced-motion`** (MQ L5 / WCAG 2.3.3) — drop decorative animation; functional transitions ≤~150ms, no overshoot.
+- **R5 Animate only `transform`/`opacity`** — layout props (width/height/top/left/margin/font-size) trigger per-frame layout/paint. Verify: DevTools paint flashing.
+- **R6 Focus visible + `:focus-visible`** (WCAG 2.4.7) — never `outline:none` unreplaced; use `:focus-visible` (keyboard), not `:focus`.
+- **R7 Body line-height ≥1.5** (WCAG 1.4.12); display can be 1.0–1.2.
+- **R8 Body measure 45–75ch** (Bringhurst §2.1.2) — below reads broken, above hurts comprehension.
+- **R9 Semantic HTML** (WHATWG + ARIA APG): `<button>` actions / `<a>` nav; one `<h1>`, no skipped heading levels; `<label>` per control; `<img alt>` present (`alt=""` decorative); `<html lang>`.
+- **R10 `color-scheme` declared** (CSS Color Adjustment L1) — so native controls/scrollbars match the theme.
+- **R11 `forced-colors: active` honored** (MQ L5) — custom rings/borders/icons use system colors in High Contrast.
+- **R12 Single source of truth** (W3C Design Tokens) — no hardcoded hex/px/ms/type literals in screen code; Tailwind arbitrary values (`p-[13px]`) count as hardcoded. Verify: grep raw literals in screen files.
+- **R13 Font loading without CLS** (CSS Fonts L4 + CWV) — `font-display: swap`/`optional`, preload above-fold, matched fallback metrics (`size-adjust`/`ascent-override`).
+- **R14 `tabular-nums` on aligned numeric columns** (CSS Fonts L4) — proportional digits jump as values change.
+- **R15 Sub-44px adjacent targets ≥24px center-to-center** (WCAG 2.5.5 AA fallback).
 
-Every rule in this file is iterated by `verify-changes` as PASS / FAIL / N_A. `INFO` is never appropriate here — these are invariants, not preferences. A project disabling one of these requires a documented reason in `craft.json.disabled_rules[]`.
+## Enforcement & reading order
 
----
-
-## R1 — Color contrast meets WCAG 2.1 AA
-
-| Surface | Minimum ratio |
-|---|---|
-| Body text (< 18pt regular or < 14pt bold) | **4.5 : 1** |
-| Large text (≥ 18pt regular or ≥ 14pt bold) | **3 : 1** |
-| Non-text UI (icons, focus rings, form borders, status indicators) | **3 : 1** |
-
-Citation: WCAG 2.1 Success Criteria 1.4.3 (text contrast) and 1.4.11 (non-text contrast).
-Verification: any computed-contrast tool — `axe-core`, `pa11y`, browser DevTools accessibility audit.
-**Light mode and dark mode are independent checks.** A pass in one is not a pass in the other.
-
-## R2 — Tap targets ≥ 44×44 CSS pixels
-
-Every interactive element (button, link, form control, custom-clickable) must occupy a hit area of at least 44 × 44 CSS pixels, even if the visual is smaller. Use padding to extend the hit area when needed.
-
-Citation: WCAG 2.1 Success Criterion 2.5.5 (Target Size) — AAA at 44px, AA at 24px with adjacent-target spacing. We adopt 44 as floor.
-Verification: query selector tests, or visual debug overlays.
-
-## R3 — Color is never the sole signal of state
-
-State (error, success, warning, selected, disabled, required) must be conveyed by at least one channel besides color — icon, label, position, shape, weight.
-
-Citation: WCAG 2.1 Success Criterion 1.4.1 (Use of Color).
-Verification: grayscale screenshot review; every state distinguishable when desaturated.
-
-## R4 — Reduced motion is respected
-
-When the user has `prefers-reduced-motion: reduce` set, decorative animations are removed. Functional transitions (navigation, modal presentation) may stay but must be reduced (typically ≤ 150 ms, no overshoot).
-
-Citation: CSS Media Queries Level 5 + WCAG 2.1 Success Criterion 2.3.3 (Animation from Interactions).
-Verification: emulate via DevTools rendering panel; visible animations should pause/shorten.
-
-## R5 — Don't animate layout properties
-
-Animate `transform` and `opacity` only. Animating `width`, `height`, `top`, `left`, `margin`, `padding`, `font-size`, or other layout-trigger properties causes layout/paint per frame — O(n) work in the layer subtree. `transform` and `opacity` are GPU-composited.
-
-Citation: Web rendering pipeline — Chrome DevTools "Rendering" panel "Paint flashing" and "Layer borders" demonstrations.
-Verification: DevTools "Performance" recording — no green paint flashes on animated areas.
-
-## R6 — Focus is visible AND uses `:focus-visible`
-
-Every interactive element has a visually distinct focus indicator (not `outline: none` without replacement). Use `:focus-visible` (keyboard-only) — not `:focus` (also fires on click).
-
-Citation: WCAG 2.1 SC 2.4.7 (Focus Visible) + CSS Selectors Level 4 (`:focus-visible`).
-Verification: tab through every interactive element; outline appears on each.
-
-## R7 — Body line-height ≥ 1.5
-
-Body text line-height is at least 1.5× the font size. Display sizes can use tighter line-heights (typically 1.0–1.2).
-
-Citation: WCAG 2.1 SC 1.4.12 (Text Spacing) — minimum 1.5 line-height.
-Verification: computed style on body type tokens.
-
-## R8 — Body measure 45–75 characters per line
-
-Body text line length stays within 45–75 characters per line at the design viewport. Below 45ch reads as broken; above 75ch reduces comprehension.
-
-Citation: Robert Bringhurst, *The Elements of Typographic Style*, §2.1.2. Widely adopted in web typography (Smashing, A List Apart, MDN guide to fluid type).
-Verification: `getComputedStyle()`'s `max-width` on body containers vs `1ch` of the body font.
-
-## R9 — Semantic HTML
-
-Use HTML elements for their semantic meaning:
-
-- `<button>` for actions, `<a>` for navigation
-- `<h1>` once per page; no skipped heading levels in the outline (no `<h2>` directly followed by `<h4>`)
-- `<label>` associated with every form control
-- `<img>` has `alt` (`alt=""` for decorative; the attribute must be present)
-- `<html lang="...">` declared
-
-Citation: WHATWG HTML Living Standard + WAI-ARIA Authoring Practices 1.2.
-Verification: axe-core / pa11y rules; document outline tools.
-
-## R10 — `color-scheme` declared
-
-The root or theme container declares `color-scheme: light dark` (or just `light` / just `dark`) so the browser renders form controls, scrollbars, and built-in UI in the matching palette.
-
-Citation: CSS Color Adjustment Module Level 1.
-Verification: native form controls (date picker, scrollbar) match the page theme.
-
-## R11 — High-contrast / forced-colors honored
-
-`forced-colors: active` (Windows High Contrast Mode, similar systems) must render the UI legibly. Custom focus rings, borders, and icons must use system colors when forced-colors is active.
-
-Citation: CSS Media Queries Level 5 + Microsoft High Contrast spec.
-Verification: emulate via DevTools rendering panel.
-
-## R12 — Single source of truth for design values
-
-No hardcoded design literals (color hex, spacing px, radius px, duration ms, type size) in screen code. Every such value comes from a named token defined once. Tailwind arbitrary values (`p-[13px]`, `text-[1.0625rem]`) count as hardcoded.
-
-Citation: Design Tokens Community Group (W3C) format spec; industry convention since Salesforce Theo (2014).
-Verification: grep for raw hex / px / ms / rgba literals in screen files; should hit only token source files.
-
-## R13 — Font loading without CLS
-
-Custom fonts use `font-display: swap` (or `optional`). Above-fold critical fonts are preloaded (`<link rel="preload" as="font">`). Fallback metrics are matched (`size-adjust`, `ascent-override`, `descent-override`, `line-gap-override`) so the layout doesn't shift when the custom font arrives.
-
-Citation: CSS Fonts Module Level 4 + Web Vitals CLS guidance.
-Verification: Lighthouse CLS score on first contentful render.
-
-## R14 — Tabular numerals on aligned numeric columns
-
-Numbers in columns (tables, dashboards, money, timestamps, scoreboards) use `font-variant-numeric: tabular-nums`. Proportional digits jump horizontally as values change.
-
-Citation: CSS Fonts Module Level 4. Standard typographic practice.
-Verification: visual review of numeric columns under live updates.
-
-## R15 — Touch target spacing
-
-When tap targets are adjacent and smaller than 44×44, gap between centers must be ≥ 24px (WCAG 2.5.5 AA fallback for sub-44 targets).
-
-Citation: WCAG 2.1 SC 2.5.5.
-Verification: inter-target spacing review.
-
----
-
-## Where to enforce
-
-`verify-changes` iterates these rules whenever a touched file is in a UI surface (route, page, component, layout). Tier-2 contract checks (does the project have a base unit? do all spacing values resolve to a token? etc.) live in `craft-guide` and run alongside.
-
-## Reading order with related skills
-
-1. **`craft-invariants`** (this file) — universals, every project.
-2. `craft-guide` — the project's design contract (declared tokens, scales). Tier-2.
-3. `design-laws` GUIDES — taste recommendations; opt-in promotion to enforced via `craft.json features.aesthetic`.
-4. `premium-signals` — reference catalog of specific products' values; opt-in promotion to enforced via `craft.json features.aesthetic.<name>.enforced_signals[]`.
-
-If you're auditing a project's UI and only have time to load one skill, load this one.
+`verify-changes` iterates these on any touched UI surface; Tier-2 contract checks run alongside in `craft-guide`. Order: **craft-invariants** (universals) → `craft-guide` (project contract) → `design-laws` (taste, opt-in) → `premium-signals` (product reference, opt-in).
