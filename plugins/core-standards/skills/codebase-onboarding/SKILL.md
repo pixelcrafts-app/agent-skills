@@ -6,106 +6,26 @@ origin: ECC
 
 # Codebase Onboarding
 
-## Triggers
+Triggers: "onboard me"/"walk me through" → full 4 phases + instructions file · "generate project instructions" → phases 1–3 + file · "update instructions" → read existing first, merge. (Instructions file is harness-specific: `CLAUDE.md`, `AGENTS.md`, `.cursor/rules`, etc.)
 
-- "Onboard me" / "walk me through this repo" → full 4-phase + project-instructions file
-- "Generate project instructions" → phases 1–3, instructions file only
-- "Update project instructions with current conventions" → read existing first, merge new findings
+## Phase 1 — Reconnaissance (Glob/Grep, parallel; Read only ambiguous signals)
 
-> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex, `.cursor/rules/*.mdc` for Cursor, or any local convention the project uses.
+Package manifests (`package.json`/`go.mod`/`Cargo.toml`/`pyproject.toml`/`pubspec.yaml`) · framework signals (`next.config`/`vite.config`/`angular.json`/rails) · entry points (`main.*`/`index.*`/`server.*`/`cmd/`) · top-2-level dir snapshot (skip node_modules/.git/dist) · tooling (`.eslintrc`/`tsconfig`/`Dockerfile`/`.github/workflows`/`.env.example`) · tests.
 
-## Phase 1: Reconnaissance (parallel)
+## Phase 2 — Architecture
 
-```
-Package manifests   → package.json, go.mod, Cargo.toml, pyproject.toml, pubspec.yaml
-Framework signals   → next.config.*, vite.config.*, angular.json, fastapi, rails config
-Entry points        → main.*, index.*, app.*, server.*, cmd/
-Directory snapshot  → top 2 levels (skip node_modules, .git, dist, .next, __pycache__)
-Tooling             → .eslintrc*, tsconfig.json, Dockerfile, .github/workflows/, .env.example
-Tests               → tests/, __tests__/, *.spec.ts, *_test.go, jest.config.*, vitest.config.*
-```
+Stack (language+version, framework, DB+ORM, bundler, CI) · pattern (monolith/monorepo/microservices/serverless; FE/BE split; REST/GraphQL/gRPC) · directory map (non-obvious dirs only) · request trace (entry → validation → logic → persistence → response).
 
-## Phase 2: Architecture Mapping
+## Phase 3 — Conventions
 
-Identify from reconnaissance data:
-- **Stack**: language + version, framework, database + ORM, bundler, CI/CD
-- **Pattern**: monolith | monorepo | microservices | serverless; frontend/backend split; REST | GraphQL | gRPC
-- **Directory map**: top-level dir → purpose (only non-obvious directories)
-- **Request trace**: entry point → validation → business logic → persistence → response
+File naming · error handling (try/catch / Result / codes) · async pattern · git (branch naming from `git branch -r`, commit style from `git log --oneline -10`). Shallow/absent git → skip + note.
 
-## Phase 3: Convention Detection
+## Phase 4 — Output
 
-- **File naming**: kebab-case | camelCase | PascalCase | snake_case
-- **Error handling**: try/catch | Result types | error codes
-- **Async pattern**: callbacks | promises | async/await | channels
-- **Git**: branch naming from `git branch -r`, commit style from `git log --oneline -10`, PR workflow
-- If git history is shallow or absent: skip git section, note it
+**Onboarding guide:** Stack table · Architecture (3-line or mermaid) · Entry points (path → what happens) · Directory map (non-obvious) · Request lifecycle (1 sentence/step) · Conventions · Common commands (dev/test/lint/build) · "Where to look" table.
 
-## Phase 4: Output
-
-### Onboarding Guide
-
-```markdown
-# Onboarding: [Project Name]
-
-## Stack
-| Layer | Technology | Version |
-|-------|-----------|---------|
-
-## Architecture
-[mermaid diagram or 3-line description]
-
-## Entry Points
-- [path] — [what happens here]
-
-## Directory Map
-[dir → purpose, non-obvious only]
-
-## Request Lifecycle
-[entry → validation → logic → db → response, 1 sentence per step]
-
-## Conventions
-- File naming: …
-- Error handling: …
-- Test pattern: …
-- Commit style: …
-
-## Common Commands
-- Dev: `…`  Tests: `…`  Lint: `…`  Build: `…`
-
-## Where to Look
-| Task | Location |
-|------|----------|
-```
-
-### Project instructions file (starter or update)
-
-If a project-instructions file already exists: read it first, enhance only — preserve existing instructions, mark additions clearly.
-
-```markdown
-# Project Instructions
-
-## Stack
-[detected summary]
-
-## Commands
-- Dev: `…`  Build: `…`  Lint: `…`  Test: `…`
-
-## Code Style
-- [naming convention]
-- [error handling pattern]
-
-## Project Structure
-[key dir → purpose]
-
-## Conventions
-- [commit style]
-- [test file pattern]
-```
+**Project-instructions file** (if one exists, read first and enhance — preserve existing, mark additions): Stack · Commands · Code style (naming, error handling) · Project structure (key dirs) · Conventions (commit style, test pattern).
 
 ## Rules
 
-- Use Glob and Grep for reconnaissance — Read selectively only on ambiguous signals
-- Trust code over config when they conflict
-- Project-instructions file: max 100 lines, no listing every dependency, no describing obvious dirs like `src/`
-- Unknown convention: state "Could not detect" — never guess
+Trust code over config when they conflict · instructions file ≤100 lines (don't list every dependency or describe obvious dirs like `src/`) · unknown convention → state "Could not detect," never guess.

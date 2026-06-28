@@ -11,104 +11,48 @@ outputs: A clear ownership and lifecycle policy for each state file
 
 # State Files
 
-> Durable state belongs in a file, not in conversation memory. Every state file must have an owner, a schema, a lifecycle, and a clear concurrency policy.
+> Durable state belongs in a file, not conversation memory. Every state file needs an **owner, schema, lifecycle, and concurrency policy.**
 
-## When to Apply
+## 1. One owner per file
 
-- A workflow spans multiple tool calls or agents
-- Results must survive past the current response
-- Subagents need a shared truth layer outside the conversation thread
-- Work may be resumed in a later session
+Exactly one owner defines the schema + write path; others may read. (config → bootstrap skill · per-file cache → analysis skill · per-run state → verification skill · escalation log → challenger.)
 
-## Must-Do Checklist
+## 2. Schema first
 
-- [ ] Name the owner skill or workflow for every state file
-- [ ] Define the schema and include a sample
-- [ ] Decide whether the file is committed or ignored
-- [ ] Define the lifecycle: created, read, updated, deleted
-- [ ] Document invalidation triggers
-- [ ] State the concurrency policy
+Define before writing: required fields + types, example values, which fields the owner sets vs consumers. No schema → it becomes a dumping ground.
 
-## Rules
+## 3. Lifecycle
 
-### 1. One owner per file
+Document created (when/by what), read (which workflows + why), updated (append vs overwrite, full vs partial), deleted/invalidated (when cleared/rebuilt).
 
-Every state file has exactly one owner. Other skills may read it, but only the owner defines its schema and write path.
+## 4. Commit or ignore?
 
-| Concern | Typical owner |
+| Type | Commit? |
 |---|---|
-| Project configuration | Project bootstrap / config skill |
-| Per-file analysis cache | Incremental analysis / cache skill |
-| Per-run verification state | Verification workflow skill |
-| Escalation log | Challenger / escalation skill |
+| Project config | Yes — shared team source of truth |
+| Per-file cache · per-run verification state | No — local/session-derived |
+| Escalation log | Optional (team visibility vs local noise) |
 
-### 2. Schema first
-
-Define the schema before writing. Include:
-
-- Required fields and types
-- Example values
-- Which fields are set by the owner and which by consumers
-
-A state file without a documented schema becomes a dumping ground.
-
-### 3. Lifecycle
-
-For each state file, document:
-
-- **Created** — when and by what action
-- **Read** — which workflows read it and why
-- **Updated** — append-only or overwrite; full or partial
-- **Deleted / invalidated** — when it must be cleared or rebuilt
-
-### 4. Commit or ignore?
-
-| Type | Commit? | Reason |
-|---|---|---|
-| Project configuration | Yes | Shared team source of truth |
-| Per-file analysis cache | No | Local, machine-specific, session-derived |
-| Per-run verification state | No | Per-run, per-machine |
-| Escalation log | Optional | Team visibility vs local noise |
-
-### 5. Invalidation contract
-
-State must be invalidated when its assumptions change.
+## 5. Invalidation
 
 | Trigger | Action |
 |---|---|
-| Underlying file content changed | Rebuild per-file cache entries |
-| Rule definitions changed | Clear affected cache dimensions |
-| Schema version bumped | Clear and rebuild the file |
-| Run completed | Mark per-run state as completed, overwrite on next run |
+| Underlying file changed | rebuild per-file cache entries |
+| Rule definitions changed | clear affected dimensions |
+| Schema version bumped | clear + rebuild |
+| Run completed | mark done; overwrite next run |
 
-### 6. Concurrency
+## 6. Concurrency
 
-Two parallel runs against the same state file can clobber each other. State the policy:
+Parallel runs can clobber a shared file. State the policy: sequential-only · lock file · last-write-wins · partition by run ID. No stable session ID → don't rely on per-run state for parallel runs.
 
-- Sequential only
-- Lock file required
-- Accept last-write-wins
-- Partition by run ID
+## 7. Trust boundary
 
-If no stable session ID is available, avoid relying on per-run state for parallel runs.
-
-### 7. Trust boundary
-
-Subagent prose is a summary for humans, not a verification signal. When subagents write state:
-
-- The parent verifies by reading the state file
-- Missing entries for assigned scope mean the agent failed its write-back contract
-- Re-analyze inline when state is missing or inconsistent
-
-## Verification Commands
-
-- Read the state file and confirm it matches the documented schema
-- Confirm committed state files are not machine-specific
-- Confirm ignored state files are listed in the project's ignore rules
+Subagent prose is a human summary, not a verification signal. When subagents write state, the **parent verifies by reading the file**; missing entries for assigned scope = failed write-back → re-analyze inline.
 
 ## Verdicts
 
-- **VALID** — file owned, schema documented, lifecycle clear
-- **ORPHANED** — file exists with no clear owner
+- **VALID** — owned, schema documented, lifecycle clear
+- **ORPHANED** — file with no clear owner
 - **STALE** — invalidation trigger fired but file not cleared
 - **CONFLICT** — parallel writes risk data loss; policy undefined
