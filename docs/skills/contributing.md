@@ -46,7 +46,7 @@ One copy. No build step. Edit and commit:
 
 ## Adding a standards skill (auto-invoke)
 
-Create `<stack>/skills/<stack>-standards/skills/<name>/SKILL.md`:
+Create `skills/<category>/<name>/SKILL.md`:
 
 ```yaml
 ---
@@ -57,7 +57,7 @@ description: One-line description that drives auto-invocation. Start with "Apply
 
 Do **not** set `disable-model-invocation: true` — auto-invoke is the whole point of standards skills.
 
-Then: add a row to `docs/skills.md`, bump versions, add a changelog line.
+Then: add a row to `docs/skills/catalog.md`, bump versions, add a changelog line.
 
 ## Adding an audit slash command — the thin-wrapper pattern
 
@@ -125,17 +125,18 @@ argument-hint: [optional-arg]
 
 Keep the description narrow and explicit so it does not fire on ambient context — these skills are user-invoked via `/<stack>-standards:<name>`.
 
-Then: add a card to `docs/skills.md`, bump versions, add a changelog line.
+Then: add a card to `docs/skills/catalog.md`, bump versions, add a changelog line.
 
 ## Adding a new pack
 
-A new pack is a new top-level folder (`database/`, `rust/`, etc.) mirroring the `flutter/`, `api/`, `web/` layout:
+A new pack is a new category folder under `skills/` (`database/`, `rust/`, etc.):
 
-1. Create `<stack>/skills/<stack>-standards/` with standards + explicit skills
-2. Add the plugin to `.claude-plugin/marketplace.json`
-3. Add a case to `scripts/export.sh` so Cursor/Antigravity consumers can generate tool-native files
-4. Document the pack in `docs/skills.md`
-5. Bump minor version, add a changelog entry
+1. Create `skills/<category>/<name>/SKILL.md` files (standards + explicit skills)
+2. Add a plugin manifest template `harnesses/claude/.claude-plugin/<category>-standards.json`
+3. Register the plugin in `scripts/build-claude.sh` (`PLUGINS` array + `plugin_category`)
+4. Add `<category>` to the export loops in `harnesses/{cursor,codex,gemini}/export.sh` and `scripts/build-kimi.sh`
+5. Document the pack in `docs/skills/catalog.md`
+6. Run `scripts/build-claude.sh`, bump version, add a changelog entry
 
 Before duplicating universal content (DRY, testing pyramid, observability, security) into a new pack, check if it already lives in `core-standards` first (`universal-rules:security`, `universal-rules:testing`, etc.). Add a reference to the relevant named section rather than copying the rules.
 
@@ -153,7 +154,7 @@ Before duplicating universal content (DRY, testing pyramid, observability, secur
 
 - [ ] Version bumped (plugin.json + marketplace.json)
 - [ ] Changelog entry added
-- [ ] `docs/skills.md` updated if behavior changed
+- [ ] `docs/skills/catalog.md` updated if behavior changed
 - [ ] README / ROADMAP reflect any user-facing change (run `core-standards:docs-sync` if unsure)
 - [ ] No project-specific names leaked into content
 - [ ] Slash command (if new) works end-to-end in a test project
