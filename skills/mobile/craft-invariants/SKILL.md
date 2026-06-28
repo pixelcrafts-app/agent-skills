@@ -1,171 +1,30 @@
 ---
 name: craft-invariants
-description: Tier 1 universal rules for mobile UI — Apple HIG, Material Design, WCAG, and platform contracts (iOS, Android, frame budget, safe areas, system reduced-motion) that hold for every mobile project regardless of brand, aesthetic, or framework (Flutter, React Native, SwiftUI, Compose, KMP). Every rule is citation-backed and produces PASS/FAIL/N_A. Anything that is a project's choice (base unit, radius scale specifics, motion scale, color palette) belongs in craft-guide (Tier 2), not here.
+description: Tier-1 universal mobile UI rules — Apple HIG, Material, WCAG, and platform contracts (frame budget, safe areas, system reduced-motion) that hold for every mobile project regardless of brand/aesthetic/framework (Flutter, RN, SwiftUI, Compose, KMP). Citation-backed, PASS/FAIL/N_A. Project choices (base unit, radius, motion, palette) live in craft-guide (Tier-2).
 requires:
-  - verification   # verdict semantics — these are PASS/FAIL rules, not INFO
+  - verification
 ---
 
-# Mobile Craft Invariants — Tier 1
+# Mobile Craft Invariants (Tier 1)
 
-> Every rule below is universal across mobile projects. Cross-framework
-> by design: Flutter, React Native, SwiftUI, Jetpack Compose, KMP. Each
-> rule cites either a platform guideline (Apple HIG, Material) or a
-> measurable platform contract.
->
-> Where this skill ends and `craft-guide` begins: invariants live here,
-> *contracts* (the project's base unit, radius scale, color palette,
-> motion scale) live in `craft-guide`. If you find yourself prescribing
-> a specific value (8dp, 200ms, #0D0D0D), it belongs in the project's
-> tokens, not in this file.
+> Universal across mobile, cross-framework. Each rule cites a platform guideline or measurable contract. Iterated by `verify-changes` as PASS/FAIL/N_A (never INFO); disabling needs a documented reason in `craft.json.disabled_rules[]`. Specific values (8dp, 200ms) belong in tokens (`craft-guide`), not here. **If you load only one mobile UI skill, load this.**
 
-## Verdict semantics
+- **R1 Tap targets** — iOS ≥44×44pt, Android ≥48×48dp (extend hit area with padding) — HIG / Material.
+- **R2 Contrast (WCAG 1.4.3/1.4.11)** — body 4.5:1, large (≥17pt/18sp) 3:1, non-text 3:1; light+dark independent.
+- **R3 Color never sole state signal** (WCAG 1.4.1) — icon/label/weight/position too. Verify grayscale.
+- **R4 Respect system reduced-motion** (`isReduceMotionEnabled` / Android transition scale) — drop decorative, nav transitions ≤150ms no spring.
+- **R5 60fps frame budget** — ≤16.6ms (≤8.3ms at 120Hz); heavy work (decode, layout, big rebuilds) off the main thread. Verify: profiler shows no dropped frames.
+- **R6 Safe areas honored** — notch/island/home-indicator/status-bar/cutouts/keyboard via framework safe-area, not hardcoded padding.
+- **R7 Keyboard moves content, doesn't hide it** — focused input + primary action stay visible (`ADJUST_RESIZE`).
+- **R8 Animate transforms/opacity/compositing props**, not layout boxes (width/height/padding per frame = layout pass each frame).
+- **R9 Platform back/nav honored** — tabs→root, sheets dismiss, deep nav pops one; override only for confirmed destructive.
+- **R10 Accessibility label on every interactive element** naming the **action** ("Save changes", not "Button"). Verify VoiceOver/TalkBack.
+- **R11 System font scaling respected** (Dynamic Type / Android font scale) — text scales + layout reflows, no clipping at largest.
+- **R12 Single source of truth** — no hardcoded literals in screen code (`padding(12)` outside the token file = FAIL). Verify grep per-framework.
+- **R13 Localization-ready** — no hardcoded user strings, RTL mirroring where shipped, locale-aware date/number formatters.
+- **R14 Offline + slow-network states** — every data screen has loading (matches layout), offline (retry), error (names failure + next step). Verify with throttling.
+- **R15 Cold start is a full journey** — every destination works as entry point (deep link/push/share/widget); cold-launch shows real content, not half-loaded.
 
-Every rule is iterated by `verify-changes` as PASS / FAIL / N_A. `INFO` is never appropriate here — these are invariants. A project disabling one of these requires a documented reason in `craft.json.disabled_rules[]`.
+## Enforcement & reading order
 
----
-
-## R1 — Tap targets meet platform minimums
-
-| Platform | Minimum hit area |
-|---|---|
-| iOS | **44 × 44 pt** |
-| Android | **48 × 48 dp** |
-
-Use padding to extend the hit area when the visual is smaller. Never rely on visual size to match hit area.
-
-Citation: Apple Human Interface Guidelines — Layout & Organization, "Tap target size." Material Design 3 — Layout, "Touch targets."
-Verification: framework-specific inspector or layout debug overlays.
-
-## R2 — Color contrast meets WCAG 2.1 AA
-
-Same ratios as web — mobile devices vary in ambient light and brightness more than desktops, so contrast headroom is more critical, not less.
-
-| Surface | Minimum ratio |
-|---|---|
-| Body text | 4.5 : 1 |
-| Large text (≥ 17pt iOS / ≥ 18sp Android) | 3 : 1 |
-| Non-text UI | 3 : 1 |
-
-Citation: WCAG 2.1 SC 1.4.3 + 1.4.11. Apple HIG references the same numbers under "Color & Effects > Contrast." Material references them under "Accessibility > Color contrast."
-Verification: tool-driven contrast check on every theme. Light and dark are independent passes.
-
-## R3 — Color is never the sole signal of state
-
-Same principle as web. Error / success / warning / selected / disabled must use icon + label / weight / position alongside color.
-
-Citation: WCAG 2.1 SC 1.4.1.
-Verification: grayscale screenshot review.
-
-## R4 — System reduced-motion is respected
-
-When the OS reports reduced-motion (iOS: `UIAccessibility.isReduceMotionEnabled`, Android: `Settings.Global.TRANSITION_ANIMATION_SCALE == 0` or `ACCESSIBILITY_REDUCE_MOTION_ENABLED`, OS-level Settings), decorative animations are removed; navigation transitions are reduced (≤ 150 ms, no overshoot / spring physics).
-
-Citation: Apple HIG — Motion. Material 3 — Motion accessibility.
-Verification: toggle the OS setting; review animations.
-
-## R5 — 60 fps frame budget — no jank on the main thread
-
-Every frame must complete its update in **≤ 16.6 ms** at 60 fps (or **≤ 8.3 ms** at 120 fps on ProMotion / high-refresh displays). Heavy work (image decoding, expensive layout, large list rebuilds) belongs on background threads / isolates / coroutines.
-
-Citation: iOS Core Animation refresh contract. Android Frame Metrics API. Material's "GPU profiling" guidance.
-Verification: framework profiler (Flutter DevTools timeline, Xcode Instruments, Android GPU profiler) shows zero dropped frames during interaction.
-
-## R6 — Safe areas are honored
-
-Notches, Dynamic Island, home indicator, status bar, gesture areas, keyboard insets, and Android display cutouts must not overlap content or interactive surfaces. Use the framework's safe-area mechanism, not hardcoded paddings.
-
-Citation: Apple HIG — Layout & Organization, "Safe areas." Android — `WindowInsets`.
-Verification: visual test on a device with each insetting kind (notched iOS, foldable, etc.).
-
-## R7 — Keyboard moves content, doesn't hide it
-
-When the soft keyboard appears, focused inputs and primary actions must remain visible. Content scrolls / resizes; it doesn't get obscured.
-
-Citation: Apple HIG — Inputs > Onscreen keyboards. Android — `WindowSoftInputMode.ADJUST_RESIZE`.
-Verification: focus each input in a long form; confirm visibility.
-
-## R8 — Don't animate layout properties
-
-Animate transforms / opacity / framework-native compositing properties. Resizing layout boxes per frame (width, height, padding, margin) causes the framework's layout pass to run every frame — O(n) work in the subtree.
-
-Citation: iOS Core Animation contract — implicit-transform animations are GPU-composited; bounds animations are not. Flutter `RepaintBoundary` + `Transform` semantics. Compose `graphicsLayer { ... }`.
-Verification: framework profiler shows compositing-only frames during the animation.
-
-## R9 — Platform back / navigation conventions are honored
-
-Back gesture (Android predictive, iOS edge-swipe) and the system back button do what the user expects: tabs return to root, modal sheets dismiss, deep navigation pops one screen. Don't override unless the action is destructive (and confirmed).
-
-Citation: Apple HIG — Navigation. Android — Predictive back gesture guidance.
-Verification: navigate forward 3 screens, back-swipe; verify the pop order.
-
-## R10 — Accessibility labels on every interactive element
-
-Every tappable element has an accessibility label that names its action — not its element type.
-
-| ✗ | ✓ |
-|---|---|
-| "Button" | "Save changes" |
-| "Image" | "Profile photo" |
-| "Icon" | "Delete this item" |
-
-Citation: Apple HIG — Accessibility > Labels. Material 3 — Accessibility > Descriptive text.
-Verification: screen reader walkthrough (iOS VoiceOver, Android TalkBack). Every step makes sense aurally.
-
-## R11 — System font scaling respected
-
-When the user has system-level large text enabled (iOS Dynamic Type, Android font scale), the app's text must scale and the layout must reflow. No `text-overflow: clip` at default sizes. No min-height containers that clip scaled text.
-
-Citation: iOS Dynamic Type. Android Settings > Display > Font size.
-Verification: set system font scale to largest; review every screen.
-
-## R12 — Single source of truth for design values
-
-No hardcoded design literals (color, spacing, radius, duration, font size) in screen code. Every value comes from a named token. Inline literals (Flutter: `SizedBox(width: 12)`; SwiftUI: `.padding(12)`; Compose: `Modifier.padding(12.dp)`) are FAIL outside the token file.
-
-Each framework declares its token file location and naming convention in the project config; screen code must import values only from those files.
-
-Citation: Design Tokens Community Group (W3C); industry convention.
-Verification: grep for raw-number patterns matching the per-framework adapter list.
-
-## R13 — Localization-ready by default
-
-- No hardcoded user-facing strings outside the localization resource(s).
-- Layout must work in RTL languages where the app ships those locales (mirror padding, alignment, icons that imply direction).
-- Date / time / currency / number formatting goes through the platform's locale-aware formatters, not string concatenation.
-
-Citation: Apple HIG — Inclusion > Internationalization. Material 3 — Internationalization.
-Verification: switch device locale; spot-check screens. Run app in RTL pseudolocale.
-
-## R14 — Offline + slow-network states designed
-
-Mobile apps live on flaky networks. Every screen that requests data has:
-
-- A loading state matching the final layout (not a full-screen spinner)
-- An offline state with retry affordance
-- An error state naming the failure + a concrete next step
-
-Citation: Apple HIG — Patterns > Loading. Material 3 — Patterns > Empty states.
-Verification: enable Network Link Conditioner (iOS) / network throttling (Android Studio); manually disable network mid-fetch.
-
-## R15 — Cold start is a full journey
-
-Every navigation destination must work as the entry point (deep link, push notification, share extension, widget tap). Cold-start the app directly into a deep screen; confirm it shows real content rather than a half-loaded state.
-
-Citation: Apple HIG — Patterns > Launching. Android — App startup performance guidance.
-Verification: build a deep link for every primary destination; cold-launch each.
-
----
-
-## Where to enforce
-
-`verify-changes` iterates these rules on any touched file in a UI surface (screen, view, widget, fragment, route). The Tier-2 contract checks (does the project have a declared base unit? do all spacing values resolve to tokens?) live in `craft-guide` and run alongside.
-
-## Reading order with related skills
-
-1. **`craft-invariants`** (this file) — universals, every mobile project.
-2. `craft-guide` — the project's design contract (declared tokens, scales). Tier 2.
-3. `design-tokens` — token completeness audit + per-framework adapter patterns.
-4. `design-laws` GUIDES — taste; opt-in via `craft.json features.aesthetic`.
-5. `premium-signals` — reference catalog of specific products' values; opt-in via `enforced_signals[]`.
-
-If you're auditing a mobile project and only have time to load one skill, load this one.
+`verify-changes` iterates these on any touched mobile UI surface; Tier-2 contract checks run alongside in `craft-guide`. Order: **craft-invariants** → `craft-guide` (contract) → `design-tokens` (token audit) → `design-laws` (taste, opt-in) → `premium-signals` (product reference, opt-in).
