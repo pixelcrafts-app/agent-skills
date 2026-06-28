@@ -4,6 +4,36 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ---
 
+## [0.18.0] — 2026-06-28
+
+Major cleanup + rename. The project is now **agent-skills**: one source of truth (`skills/`) that deploys to Claude, Cursor, Codex, Gemini, and Kimi. Every skill was rewritten to be short and principle-first without losing substance, and the runtime moved to advisory-only across all harnesses.
+
+### Breaking
+
+- **Removed all hooks** — the entire `core-hooks` plugin (13 bash hooks) is gone. Claude Code is now advisory like the other harnesses; no PreToolUse/PostToolUse/Stop enforcement. If you relied on hook-blocking (secret-block, post-test gate, plan/verify gates), it no longer ships.
+- **Removed the enforcement layer** — `enforcement/*.json` rule registries and `.claude/enforcement.json`-driven gating are gone.
+- **Removed the Aider harness** — `harnesses/aider/` and its setup doc. Cursor / Codex / Gemini cover static export.
+
+### Changed
+
+- **Renamed `claude-craft` → `agent-skills`** across configs, docs, and the marketplace (`pixelcrafts-app/agent-skills`).
+- **All 63 skills tightened** — principle-first, values demoted to examples, bans softened to "preferred + justify", Detect→Check→Suggest for contextual concerns. Average skill ~53 lines (was 150+; `craft-guide` 1347 → 93), every rule / value / citation / stable ID preserved.
+- **`mcp-integration` → `external-tools`**, moved to `core` (harness-agnostic guidance: prefer Bash over connectors, validate external output). The project ships **no** MCP integration.
+- **Catalog regenerated from source**; full docs sync (README rewritten value-first, AGENTS, setup docs, SECURITY, contributing).
+- Plugin versions: core-standards 0.7→**0.8**, web 0.11→**0.12**, flutter 1.1→**1.2**, api 0.7→**0.8**, mobile 1.2→**1.3**, design 0.2→**0.3**.
+
+### Added
+
+- **Gemini CLI adapter** (`harnesses/gemini/export.sh` → `GEMINI.md`).
+- **`scripts/deploy.sh`** — one entrypoint for every harness.
+- **`scripts/build-claude.sh` / `build-kimi.sh`** — generate the Claude plugin marketplace and the full Kimi skill set from `skills/`; Kimi now covers all skills (was 6) with hand-tuned overrides preserved.
+
+### Fixed
+
+- Claude plugin manifests no longer reference missing `commands/` paths; all 6 plugins are uniform and resolve cleanly.
+
+---
+
 ## [0.17.0] — 2026-05-19
 
 Enforcement infrastructure + three-tier design architecture. Phase A closes the gap between skill *content* (already correct) and skill *enforcement at runtime* (previously self-imposed). Phase B refactors the design / craft skills so industry universals are enforced, project contracts are checked, and one designer's taste is opt-in.

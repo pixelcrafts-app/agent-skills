@@ -1,6 +1,6 @@
 {
   "name": "mobile-standards",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Mobile-universal standards — craft quality, production readiness, forms, observability, design tokens. Applies to Flutter, React Native, SwiftUI, Jetpack Compose. Auto-invoked by description triggers.",
   "author": {
     "name": "pixelcrafts",

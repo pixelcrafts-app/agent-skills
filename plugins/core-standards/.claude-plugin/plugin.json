@@ -1,6 +1,6 @@
 {
   "name": "core-standards",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "Cross-stack engine and universal skills. work-principles, planning, universal-rules, verification, verify-changes, codebase-index, auth-flows, craft-config, subagent-brief, honesty (no unsourced claims, evidence before done), spec-validator, contracts, challenger, contract-tests, integration, full-setup — production autonomous pipeline from single prompt to verified delivery.",
   "author": {
     "name": "pixelcrafts",
