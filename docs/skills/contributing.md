@@ -170,4 +170,4 @@ Tag every release as `v<marketplace-version>` so `/plugin marketplace update pix
 
 - Bug in a skill (wrong output, crash) → open an issue with the input that triggered it
 - Disagreement with a standard → open a discussion, not an issue. Standards are opinionated by design; changing them is a policy decision.
-- Security issue → see [SECURITY.md](../SECURITY.md)
+- Security issue → see [SECURITY.md](../../SECURITY.md)
