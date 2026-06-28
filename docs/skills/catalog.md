@@ -70,11 +70,11 @@ Install a pack: `/plugin install <pack>@pixelcrafts` (after `/plugin marketplace
 
 ## core-standards (cross-stack engine — applies to every project)
 
-**Engine & always-on:** work-principles · planning · universal-rules · verification · verify-changes · codebase-index · honesty (always-loaded) · subagent-brief · auth-flows · craft-config · search-first · state-files · codebase-onboarding · architecture-decision-records · docker-patterns · hexagonal-architecture.
+**Engine & always-on:** work-principles · planning · universal-rules · verification · verify-changes · codebase-index · honesty (always-loaded) · subagent-brief · auth-flows · craft-config · search-first · state-files · codebase-onboarding · architecture-decision-records · docker-patterns · hexagonal-architecture · external-tools (prefer Bash over connectors; validate external output).
 
 **Autonomous pipeline** (single prompt → verified delivery, each phase locked before the next): `spec-validator` → `contracts` → `contract-tests` → `integration` → `challenger` (adversarial review, fresh context).
 
-**Claude-only** (ship in this plugin; need Claude's command/state features): `[cmd]` full-setup · `[cmd]` /spec (via spec-validator) · context-budget · docs-sync · mcp-integration · strategic-compact.
+**Claude-only** (ship in this plugin; need Claude's command/state features): `[cmd]` full-setup · `[cmd]` /spec (via spec-validator) · context-budget · docs-sync · strategic-compact.
 
 ---
 

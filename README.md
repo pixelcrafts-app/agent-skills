@@ -21,7 +21,7 @@ Every AI coding tool wants its standards in a different place and format — Cla
 ## How It Works
 
 ```
-                  skills/<category>/<name>/SKILL.md      ← single source (63 skills · 58 portable + 5 Claude-only)
+                  skills/<category>/<name>/SKILL.md      ← single source (63 skills · 59 portable + 4 Claude-only)
                                  │
         ┌───────────┬───────────┼───────────┬──────────┐
      generate     export      export      export     install
@@ -35,9 +35,9 @@ Every AI coding tool wants its standards in a different place and format — Cla
 - **Plugin generate** (Claude) — `scripts/build-claude.sh` builds an installable plugin marketplace from `skills/`.
 - **Install** (Kimi) — `install.sh` builds the Kimi skill set from `skills/` (via `build-kimi.sh`) and copies it into `~/.kimi/skills/`.
 
-`skills/` holds two kinds of category: **portable** (`core`, `api`, `web`, `mobile`, `flutter`, `design`) exported to every harness, and **`claude/`** — Claude-only skills (slash commands, `/compact`, MCP, context budget) that ship only in the Claude plugins.
+`skills/` holds two kinds of category: **portable** (`core`, `api`, `web`, `mobile`, `flutter`, `design`) exported to every harness, and **`claude/`** — Claude-only skills (slash commands, `/compact`, context budget) that ship only in the Claude plugins.
 
-> **Content reuse, not behavioral parity.** Every harness receives all 58 skill texts, but a skill's *behavior* depends on the harness's capabilities. Skills that rely on sub-agents, slash commands, or state files (e.g. the autonomous pipeline) are richer on Claude Code and act as plain guidance on simpler harnesses. See [docs/harnesses/cross-model-compatibility.md](docs/harnesses/cross-model-compatibility.md).
+> **Content reuse, not behavioral parity.** Every harness receives all 59 portable skill texts, but a skill's *behavior* depends on the harness's capabilities. Skills that rely on sub-agents, slash commands, or state files (e.g. the autonomous pipeline) are richer on Claude Code and act as plain guidance on simpler harnesses. See [docs/harnesses/cross-model-compatibility.md](docs/harnesses/cross-model-compatibility.md).
 
 ---
 
@@ -63,17 +63,17 @@ One entrypoint deploys to any harness:
 
 ## Skills
 
-63 skills — 58 portable (exported to every harness) plus 5 Claude-only:
+63 skills — 59 portable (exported to every harness) plus 4 Claude-only:
 
 | Pack | Count | Exported to | Covers |
 |------|-------|-------------|--------|
-| `core` | 21 | all | planning, verification, honesty, contracts, subagent briefs, universal rules |
+| `core` | 22 | all | planning, verification, honesty, contracts, subagent briefs, universal rules, external-tools |
 | `web` | 13 | all | Next.js, craft-guide, premium-signals, production-readiness |
 | `flutter` | 9 | all | engineering, forms, performance, accessibility, observability |
 | `api` | 6 | all | NestJS, api-design, db-migrations, websockets |
 | `design` | 5 | all | design-laws, accessibility, information-architecture |
 | `mobile` | 4 | all | cross-platform craft, design-tokens, premium-signals |
-| `claude` | 5 | Claude only | full-setup, context-budget, strategic-compact, mcp-integration, docs-sync |
+| `claude` | 4 | Claude only | full-setup, context-budget, strategic-compact, docs-sync |
 
 See [docs/skills/catalog.md](docs/skills/catalog.md) for the full list and when each fires.
 
