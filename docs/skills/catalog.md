@@ -93,6 +93,29 @@ Install: `/plugin install web-standards@pixelcrafts`.
 
 ---
 
+## Mobile pack (`mobile-standards`)
+
+Install: `/plugin install mobile-standards@pixelcrafts`. Cross-platform (Flutter, React Native, SwiftUI, Jetpack Compose).
+
+| Skill | Covers |
+|---|---|
+| craft-guide | Tier-2 contract — IA, density signatures, perception/feedback, motion, state design, navigation continuity |
+| craft-invariants | Tier-1 universals (PASS/FAIL) — tap targets, contrast, 60fps budget, safe areas, reduced motion, cold-start |
+| design-tokens | Token completeness + naming + per-framework violation patterns (Flutter/RN/SwiftUI/Compose) |
+| premium-signals | INFO-only catalog of precise iOS 26 / Material You values — Liquid Glass, tonal elevation, haptics, sheet detents |
+
+## Design pack (`design-standards`)
+
+Install: `/plugin install design-standards@pixelcrafts`. Platform-agnostic (Web, iOS, Android).
+
+| Skill | Covers |
+|---|---|
+| design-laws | RULES (perceptual color, type scale, layout-anim perf) + GUIDES (taste, anti-AI-slop tests) |
+| accessibility | WCAG 2.2 AA across Web/iOS/Android — POUR + cross-platform attribute map |
+| information-architecture | Page structure, navigation, route hierarchy, content placement |
+| brand-research | Verify the product exists, then collect assets logo → imagery → UI → color → font |
+| creative-direction | What separates memorable, ownable UI from functional-but-forgettable |
+
 ## Cross-stack skills plugin (`core-standards`)
 
 Install: `/plugin install core-standards@pixelcrafts`.
@@ -122,7 +145,7 @@ The skills below compose the production autonomous loop — single-prompt → ve
 | challenger | Phase 1 + 4 — adversarial review | Fresh-context agent that never saw the implementation process. Reviews contracts ("3 ways these are wrong or incomplete") and finished work against the spec. BLOCK / WARN / INFO thresholds, 3-round cap. Defeats done-delusion and compounding hallucination. |
 | contract-tests | Phase 2 — test generation | Tests authored by a dedicated Test Writer FROM contracts — never by the implementer. Locked: implementer cannot modify the test file. The only way to make tests pass is to correctly implement the contract. Prevents fix-the-test failure mode. |
 | integration | Phase 3 — wiring | Integration agent (fresh context) wires implementations using contracts as the spec. Runs acceptance tests from Phase 0. Automatic fix loop: max 5 attempts before escalation. Maintains the progress state file as observation only — reviewer trusts test results, not state files. |
-| full-setup | (Claude harness only) Setup | Generates the project layer for any project — new or existing. Detects stack (Flutter / NestJS / Next.js / etc.), reads existing code if present, generates `CLAUDE.md`, `.claude/rules/`, agent files, `craft.json`, `enforcement.json`, and wires PostToolUse hooks. Invoked via `/full-setup`. |
+| full-setup | (Claude harness only) Setup | Generates the project layer for any project — new or existing. Detects stack (Flutter / NestJS / Next.js / etc.), reads existing code if present, generates `CLAUDE.md`, `.claude/rules/`, agent files, and `craft.json`. Invoked via `/full-setup`. |
 
 Install either / both alongside any pack — they apply regardless of stack.
 
@@ -137,18 +160,18 @@ Install either / both alongside any pack — they apply regardless of stack.
 
 ## Use without Claude Code
 
-Cursor, Antigravity, Codex, OpenAI SWE — export tool-native files from the same source:
+Cursor, Codex, and Gemini CLI consume the same skills via static export:
 
 ```bash
 git clone https://github.com/pixelcrafts-app/agent-skills
-./agent-skills/scripts/export.sh /path/to/your-project <flutter|api|web>
+./agent-skills/scripts/deploy.sh <cursor|codex|gemini> /path/to/your-project [pack]
 ```
 
 Outputs:
-- `.cursor/rules/<pack>-<skill>.mdc` — Cursor Rules v2 (YAML frontmatter, scoped globs)
-- `AGENTS.md` — concatenated standards for Antigravity, Codex, OpenAI SWE
+- Cursor → `.cursor/rules/<pack>-<skill>.mdc` (Rules v2, scoped globs)
+- Codex → `AGENTS.md` · Gemini → `GEMINI.md` (concatenated standards)
 
-Re-run anytime to refresh.
+Kimi installs globally via `./harnesses/kimi/install.sh`. Re-run anytime to refresh.
 
 ---
 
@@ -359,8 +382,7 @@ One-shot setup for any project — new or existing. Detects stack from manifests
 - `.claude/rules/quality.md` — quality bar specific to this app (performance budgets, test coverage targets, accessibility floor)
 - `.claude/agents/` — orchestrator, implementer, reviewer, challenger, integration agent files
 - `.claude/spec.md`, `.claude/progress.md` — empty starters for the autonomous loop
-- `.claude/craft.json`, `.claude/enforcement.json` — engine config keyed to detected stacks
-- `.claude/settings.json` — wires PostToolUse hooks (post-test) and registers the marketplace
+- `.claude/craft.json` — engine config keyed to detected stacks
 
 Two modes:
 1. **New project** — pass a description (`/full-setup "Superman flying game in Flutter"`); skill generates a starter layer based on domain inference.
