@@ -2,7 +2,7 @@
 
 ## Reporting a vulnerability
 
-If you find a security issue — a skill that could be tricked into exfiltrating data, a hook that fails open when it should fail closed, a malicious pattern the marketplace would accept — please report it privately rather than opening a public issue.
+If you find a security issue — a skill that could be tricked into exfiltrating data, a malicious pattern the marketplace would accept — please report it privately rather than opening a public issue.
 
 Email: `security@pixelcrafts.app`
 
@@ -18,8 +18,7 @@ We'll acknowledge receipt within 72 hours and work with you on a disclosure time
 
 In-scope:
 
-- Plugins in this repo (`flutter-standards`, `api-standards`, `web-standards`, `core-hooks`, `core-standards`)
-- Hooks shipped by `core-hooks` that could fail to block dangerous operations
+- Plugins in this repo (`flutter-standards`, `api-standards`, `web-standards`, `core-standards`)
 - Skills (including those in `core-standards`) that could be prompt-injected into leaking user code or secrets
 
 Out-of-scope:

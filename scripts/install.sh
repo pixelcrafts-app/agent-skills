@@ -26,7 +26,6 @@ case "$HARNESS" in
     echo "Claude Code uses the plugin marketplace."
     echo "Run these commands in Claude Code:"
     echo "  /plugin marketplace add pixelcrafts-app/agent-skills"
-    echo "  /plugin install core-hooks@pixelcrafts"
     echo "  /plugin install core-standards@pixelcrafts"
     ;;
   kimi)

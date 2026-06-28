@@ -26,9 +26,9 @@ Rules live **inside** `SKILL.md` bodies — not as separate `*.md` files. The fr
 
 ## Naming
 
-- **Marketplace source** — `pixelcrafts-app/claude-craft`
+- **Marketplace source** — `pixelcrafts-app/agent-skills`
 - **Plugin per stack** — `<stack>-standards` (`flutter-standards`, `api-standards`, `web-standards`)
-- **Cross-stack** — `core-hooks` (hooks only) and `core-standards` (skills only); neither has a stack prefix — both apply to every language
+- **Cross-stack** — `core-standards` (skills only); no stack prefix — applies to every language
 - **Slash commands** — namespaced per pack: `/flutter-standards:pre-ship`, `/api-standards:sync-migrate`, `/web-standards:premium-check`
 
 ## Editing a skill
@@ -110,39 +110,6 @@ When a command audits a **subset** of a skill, use the named section reference n
 Rules in standards skills are identified by their **section heading**, not by positional number. A dimension reference like `craft-guide:aesthetic-coherence` maps to the `## Aesthetic Coherence` (or similar) section heading in `craft-guide/SKILL.md`. This survives skill edits — positional numbers (`§9`, `§4.2`) break silently when sections are inserted.
 
 When adding rules to these skills, use a descriptive `##` or `###` heading. The heading becomes the stable identifier. Cross-references from other skills use `skill-name:section-heading` format — e.g. `universal-rules:security`, `craft-guide:aesthetic-coherence`. Do not use `§N.M` notation in new skills or when updating existing ones.
-
-## Adding an enforcement rule (deterministic block)
-
-Enforcement rules block Edit / Write / MultiEdit at the PreToolUse layer when a project has opted in via `.claude/enforcement.json`. They must be deterministic — regex-level checks on file content. Subjective rules (craft, aesthetic, architecture) stay inside standards skills and are enforced at the gate stage, not here.
-
-Per-pack default registries live at `core/skills/core-hooks/enforcement/<pack>.json`. Add a rule to the `rules` array:
-
-```json
-{
-  "id": "web.sec.no-dangerous-html",
-  "pattern": "dangerouslySetInnerHTML",
-  "message": "dangerouslySetInnerHTML is an XSS vector — sanitize input upstream or render safely.",
-  "applies_to": "*.tsx,*.jsx"
-}
-```
-
-- `id` — unique within the pack. Convention `<pack-shortcut>.<category>.<slug>` (shortcuts: `flutter`, `web`, `api`). Used by projects in `disabled_rules` overrides — changing the ID breaks overrides, so pick a good one up front.
-- `pattern` — bash grep ERE regex. Escape `\`, `$`, `"` per JSON rules. ERE does not support lookaround — rules requiring "X without Y" context cannot be expressed here; keep those in standards skills.
-- `message` — one line, action-oriented. Shown to Claude in the block stderr.
-- `applies_to` — comma-separated file globs. Matched against both full path and basename.
-
-Test locally:
-
-```bash
-echo '{"tool_name":"Write","tool_input":{"file_path":"/tmp/test.tsx","content":"<div dangerouslySetInnerHTML={{__html:x}} />"}}' \
-  | CLAUDE_PLUGIN_ROOT=/abs/path/to/core/skills/core-hooks \
-    CLAUDE_PROJECT_DIR=/tmp/fake-project \
-    bash /abs/path/to/core/skills/core-hooks/hooks/enforce-rules.sh
-```
-
-With `.claude/enforcement.json` containing `{"mandatory":["web-standards"]}` in `/tmp/fake-project`, this should exit 2 with the message on stderr.
-
-No code changes in `core-hooks/hooks/enforce-rules.sh` are needed — rules load automatically from the JSON registry. User-facing doc: [docs/enforcement.md](enforcement.md).
 
 ## Adding an explicit skill (slash command)
 

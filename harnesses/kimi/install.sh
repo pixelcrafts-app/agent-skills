@@ -1,6 +1,6 @@
 #!/bin/bash
 # Install agent-skills for Kimi Code CLI.
-# Syncs Kimi-adapted skills from harnesses/kimi/skills/ to ~/.kimi/skills/.
+# Builds the Kimi skill set from the single source (skills/) then syncs it to ~/.kimi/skills/.
 # Run from the agent-skills repo root: ./harnesses/kimi/install.sh
 
 set -e
@@ -8,6 +8,9 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 SOURCE_DIR="$SCRIPT_DIR/skills"
 TARGET_DIR="$HOME/.kimi/skills"
+
+# Regenerate from the single source so we never install a stale copy.
+bash "$SCRIPT_DIR/../../scripts/build-kimi.sh" >/dev/null
 
 echo "Installing agent-skills for Kimi to $TARGET_DIR"
 

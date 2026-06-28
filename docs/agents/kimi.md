@@ -44,17 +44,15 @@ Brief project description.
 
 ## What Is Kimi-Specific
 
-- No bash hooks (Kimi does not support lifecycle hooks)
 - No slash commands (use natural language)
 - No state files or persistent audit cache
-- Enforcement is discipline-based via skills, not deterministic blocks
+- No plugin packaging — skills are installed globally to `~/.kimi/skills/`
 
 ## Differences from Claude
 
 | Feature | Claude | Kimi |
 |---------|--------|------|
-| Hooks | 13 bash hooks | Not supported |
-| Enforcement | `.claude/enforcement.json` | Discipline via skills |
+| Skill delivery | Plugin marketplace | Global `~/.kimi/skills/` |
 | Slash commands | `/verify-changes` | Natural language |
 | Per-project files | `.claude/` + `CLAUDE.md` | `.kimi/AGENTS.md` only |
-| State files | `agent-traffic.log` | Not supported |
+| State files | `verify-state.json`, `audit-cache.json` | Not supported |

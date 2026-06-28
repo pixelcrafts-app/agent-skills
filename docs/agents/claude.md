@@ -8,7 +8,6 @@ Agent-skills works with Claude Code through the Claude plugin system and project
 
 ```bash
 /plugin marketplace add pixelcrafts-app/agent-skills
-/plugin install core-hooks@pixelcrafts
 /plugin install core-standards@pixelcrafts
 /plugin install web-standards@pixelcrafts      # web projects
 /plugin install api-standards@pixelcrafts      # API/backend projects
@@ -27,7 +26,6 @@ Commit `.claude/settings.json`:
     "pixelcrafts": { "source": { "source": "github", "repo": "pixelcrafts-app/agent-skills" } }
   },
   "enabledPlugins": {
-    "core-hooks@pixelcrafts": true,
     "core-standards@pixelcrafts": true,
     "web-standards@pixelcrafts": true
   }
@@ -36,15 +34,12 @@ Commit `.claude/settings.json`:
 
 ## What Works
 
-- **Bash hooks** — deterministic pre/post tool enforcement
+- **Plugins** — skills delivered as installable plugins with auto-invoke descriptions
 - **Slash commands** — `/verify-changes`, `/full-setup`, `/spec`, `/parallelize`
-- **State files** — `.claude/agent-traffic.log`, `.claude/verify-state.json`
-- **Enforcement config** — `.claude/enforcement.json`
 - **Project config** — `.claude/craft.json`
 
 ## What Is Claude-Specific
 
-- Hooks run only in Claude Code (bash lifecycle events)
 - Slash commands require Claude's command system
 - Plugin marketplace metadata is Claude-specific
 

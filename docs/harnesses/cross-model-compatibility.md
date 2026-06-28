@@ -1,10 +1,10 @@
 # Cross-Model Compatibility Analysis
 
-> Question: Does the generic `agent-skills` structure work automatically for every model — Claude, Kimi, Codex, Cursor, Aider?
+> Question: Does the generic `agent-skills` structure work automatically for every harness — Claude, Cursor, Codex, Gemini, Aider, Kimi?
 
-**Short answer: No.**
+**Short answer: No — but it gets you most of the way.**
 
-The generic skill structure is a good single source of truth, but it does **not** work automatically across models. Each AI coding tool has different capabilities, and those differences are fundamental.
+The generic skill structure is a good single source of truth, but behavior still depends on each harness's capabilities. agent-skills delivers the same **skill content** to every harness; what differs is how richly each tool can act on it.
 
 ---
 
@@ -20,22 +20,22 @@ The generic skill structure is a good single source of truth, but it does **not*
 
 The value is **content reuse**, not **behavioral parity**.
 
+> agent-skills ships **skills only** — no bash hooks, no deterministic enforcement. Every harness, Claude included, treats the standards as guidance the model applies, not gates the tool enforces. The differences below are about *delivery* and *capability*, not about who blocks what.
+
 ---
 
 ## Capability Matrix
 
-| Capability | Claude Code | Kimi Code CLI | Cursor | Codex | Aider |
-|------------|-------------|---------------|--------|-------|-------|
-| Bash hooks (PreToolUse / PostToolUse / Stop) | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
-| Slash commands | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
-| Plugin marketplace | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
-| State files / audit cache | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
-| Multi-agent orchestration | ✅ Yes | ⚠️ Limited | ❌ No | ❌ No | ❌ No |
-| Per-project config directory | `.claude/` | `.kimi/` | `.cursor/` | none | `.aider/` |
-| Global skill install | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
-| Static rules export | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Natural language triggers | ✅ Yes | ✅ Yes | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
-| Deterministic enforcement | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
+| Capability | Claude Code | Kimi Code CLI | Cursor | Codex | Gemini CLI | Aider |
+|------------|-------------|---------------|--------|-------|------------|-------|
+| Plugin packaging | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
+| Slash commands | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
+| State files / audit cache | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
+| Multi-agent orchestration | ✅ Yes | ⚠️ Limited | ❌ No | ❌ No | ❌ No | ❌ No |
+| Per-project config directory | `.claude/` | `.kimi/` | `.cursor/` | none | none | `.aider/` |
+| Global skill install | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No | ❌ No | ❌ No |
+| Static rules export | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
+| Natural language triggers | ✅ Yes | ✅ Yes | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
 
 ---
 
@@ -43,7 +43,7 @@ The value is **content reuse**, not **behavioral parity**.
 
 These things work with minimal adaptation:
 
-1. **Skill content reuse** — the same markdown instructions can be copied to any harness.
+1. **Skill content reuse** — the same markdown instructions can be delivered to any harness.
 2. **Rule semantics** — PASS/FAIL/INFO tiers are understood by any LLM if prompted clearly.
 3. **Project identity** — project name, stack, boundaries can be expressed in any format.
 4. **End-of-task checks** — "run tests before finishing" works in any tool if included in instructions.
@@ -53,25 +53,10 @@ These things work with minimal adaptation:
 
 ## What Does NOT Work Automatically
 
-### 1. Bash Hooks
+### 1. Slash Commands
 **Claude-only.**
 
-Hooks like `protect-files.sh`, `post-test.sh`, `cite-or-read.sh` run because Claude Code exposes a bash lifecycle (PreToolUse, PostToolUse, Stop). No other tool exposes these events.
-
-**Impact:**
-- Kimi cannot block edits to `.env`
-- Cursor cannot auto-run tests after every edit
-- Codex cannot enforce a turn-end citation check
-
-**Workaround:**
-- Rely on skill-based discipline
-- Add explicit manual verification steps
-- Use CI/CD for enforcement instead of tool hooks
-
-### 2. Slash Commands
-**Claude-only.**
-
-`/verify-changes`, `/full-setup`, `/spec`, `/parallelize` are Claude command system features.
+`/verify-changes`, `/full-setup`, `/spec`, `/parallelize` are Claude command-system features.
 
 **Impact:**
 - Other tools require natural language triggers: "verify my changes", "set up this project", "validate the spec"
@@ -83,14 +68,13 @@ Hooks like `protect-files.sh`, `post-test.sh`, `cite-or-read.sh` run because Cla
 - Use `.kimi/AGENTS.md` to tell Kimi what phrases to watch for
 - Cursor rules are static, so triggers don't apply
 
-### 3. State Files
+### 2. State Files
 **Claude-only.**
 
-`.claude/agent-traffic.log`, `.claude/verify-state.json`, `.claude/audit-cache.json` rely on Claude being able to read/write project-local state across turns.
+`.claude/verify-state.json` and `.claude/audit-cache.json` rely on Claude reading/writing project-local state across turns (used by the `verify-changes` and `codebase-index` skills).
 
 **Impact:**
-- No persistent audit cache in Kimi
-- No agent traffic logging in Cursor
+- No persistent audit cache elsewhere
 - Cannot skip unchanged files on repeat audits
 
 **Workaround:**
@@ -98,29 +82,29 @@ Hooks like `protect-files.sh`, `post-test.sh`, `cite-or-read.sh` run because Cla
 - Use git status/diff to detect unchanged files
 - Accept that non-Claude tools are less stateful
 
-### 4. Multi-Agent Orchestration
+### 3. Multi-Agent Orchestration
 **Claude-best, others limited or none.**
 
 The autonomous pipeline (`spec-validator → contracts → contract-tests → integration → challenger`) depends on spawning subagents with warm briefs and observing their output.
 
 **Impact:**
-- Kimi has Agent/Task/Explore tools but no hook observation
+- Kimi has Agent/Task/Explore tools but weaker observation
 - Cursor has Composer but different semantics
-- Codex/Aider are single-agent
+- Codex / Gemini / Aider are single-agent
 
 **Workaround:**
 - Run the pipeline as a single long prompt
 - Break into manual phases
 - Accept lower autonomy on non-Claude tools
 
-### 5. MCP Integration
+### 4. MCP Integration
 **Claude-specific protocol.**
 
 Model Context Protocol servers are a Claude Code convention.
 
 **Impact:**
 - Skills referencing MCP (e.g., Figma, GitHub) won't work elsewhere
-- Kimi may have its own tool protocol later
+- Other CLIs may have their own tool protocols
 
 **Workaround:**
 - Mark MCP-dependent skills as Claude-only
@@ -131,31 +115,36 @@ Model Context Protocol servers are a Claude Code convention.
 ## Per-Harness Reality
 
 ### Claude Code
-- **Best experience.** Full hooks, slash commands, state, multi-agent.
+- **Best experience.** Plugins, slash commands, state, multi-agent.
 - Gets 100% of what `agent-skills` can offer.
 
 ### Kimi Code CLI
 - **Good for pure skill instructions.**
-- Loses: hooks, slash commands, state files, deterministic enforcement.
+- Loses: slash commands, plugin packaging.
 - Gains: simpler setup (one `AGENTS.md` per project).
 - Requires: Kimi-adapted skills that remove Claude-specific references.
 
 ### Cursor
 - **Static rules only.**
 - Gets: design system rules, code style, architecture guidelines.
-- Loses: everything dynamic (hooks, verification loops, state).
+- Loses: slash commands, multi-agent, state.
 - Cursor Rules v2 are applied based on file globs — no runtime reasoning.
 
 ### OpenAI Codex / SWE
-- **Single-file instructions.**
-- Gets: a long `AGENTS.md` with all rules.
-- Loses: structured skill loading, hooks, commands, state.
+- **Single-file instructions** (`AGENTS.md`).
+- Gets: a long file with all rules.
+- Loses: structured skill loading, commands, state.
 - The agent may ignore parts of the instructions in long sessions.
 
+### Gemini CLI
+- **Single-file instructions** (`GEMINI.md`).
+- Same shape as Codex — one concatenated context file, auto-loaded.
+- Loses: structured skill loading, commands, state.
+
 ### Aider
-- **Convention files.**
+- **Convention files** (`.aider/conventions.md`).
 - Gets: coding conventions and review checklists.
-- Loses: all dynamic enforcement.
+- Loses: commands, multi-agent, state.
 
 ---
 
@@ -177,7 +166,7 @@ You cannot claim that `agent-skills` works the same across all tools. The honest
 | Don't Say | Do Say |
 |-----------|--------|
 | "Works with every AI model" | "Skills are portable; capabilities depend on the harness" |
-| "Automatic across Claude, Kimi, Cursor" | "Claude gets full hooks; Kimi gets pure skills; Cursor gets exported rules" |
+| "Automatic across Claude, Cursor, Gemini" | "Claude gets plugins + slash commands; others get exported rules" |
 | "Same behavior everywhere" | "Same standards, adapted delivery" |
 
 ---
@@ -188,7 +177,7 @@ You cannot claim that `agent-skills` works the same across all tools. The honest
 2. **Maintain per-harness adapters** — one adapter per supported tool.
 3. **Document limitations honestly** — every harness guide should say what is lost.
 4. **Invest in Kimi** — it is the closest to Claude in terms of skill loading.
-5. **Deprioritize Cursor/Codex/Aider parity** — static export is good enough.
+5. **Deprioritize Cursor/Codex/Gemini/Aider parity** — static export is good enough.
 6. **Do not promise automatic behavior** — promise content reuse + best-effort adaptation.
 
 ---

@@ -1,6 +1,6 @@
 # kimi-craft
 
-Kimi equivalent of claude-craft. Global skill packs that apply across all projects — no per-project copying of rules.
+Kimi equivalent of agent-skills. Global skill packs that apply across all projects — no per-project copying of rules.
 
 ## How It Works
 
@@ -34,16 +34,16 @@ Kimi equivalent of claude-craft. Global skill packs that apply across all projec
 
 | Skill | Stack | Status |
 |---|---|---|
-| `pc-api-standards` | NestJS / Prisma / backend | ⏳ Port from claude-craft |
-| `pc-web-standards` | Next.js / React / frontend | ⏳ Port from claude-craft |
-| `pc-flutter-standards` | Flutter / Dart | ⏳ Port from claude-craft |
-| `pc-mobile-standards` | Cross-platform mobile | ⏳ Port from claude-craft |
-| `pc-design-standards` | Design / craft / UI | ⏳ Port from claude-craft |
+| `pc-api-standards` | NestJS / Prisma / backend | ⏳ Port from agent-skills |
+| `pc-web-standards` | Next.js / React / frontend | ⏳ Port from agent-skills |
+| `pc-flutter-standards` | Flutter / Dart | ⏳ Port from agent-skills |
+| `pc-mobile-standards` | Cross-platform mobile | ⏳ Port from agent-skills |
+| `pc-design-standards` | Design / craft / UI | ⏳ Port from agent-skills |
 
 ## Installation
 
 ```bash
-# From claude-craft repo root
+# From agent-skills repo root
 ./kimi/install.sh
 ```
 
@@ -56,20 +56,19 @@ This syncs all skills from `kimi/skills/` to `~/.kimi/skills/`.
 3. Fill in: project name, active stacks, boundaries, end-of-task checks
 4. Done — no other files needed
 
-## Differences from claude-craft
+## Differences from agent-skills
 
-| Feature | claude-craft (Claude) | kimi-craft (Kimi) |
+| Feature | agent-skills (Claude) | kimi-craft (Kimi) |
 |---|---|---|
-| Hooks | 13 bash hooks | ❌ Not supported |
-| Enforcement | `.claude/enforcement.json` | ❌ Not supported — discipline via skills |
+| Skill delivery | Plugin marketplace | ✅ Global `~/.kimi/skills/` |
 | Slash commands | `/parallelize`, `/verify-changes` | ❌ Not supported — use natural language |
 | Skill packs | `core-standards`, `api-standards`, etc. | ✅ Same concept, pure SKILL.md |
 | Per-project setup | `.claude/` + `CLAUDE.md` | ✅ Just `.kimi/AGENTS.md` |
-| State files | `agent-traffic.log`, `verify-state.json` | ❌ Not supported |
+| State files | `verify-state.json`, `audit-cache.json` | ❌ Not supported |
 
-## Porting a claude-craft Skill
+## Porting a agent-skills Skill
 
-1. Copy `SKILL.md` from `claude-craft/<pack>/skills/<name>/`
+1. Copy `SKILL.md` from `agent-skills/<pack>/skills/<name>/`
 2. Remove hook references (e.g., "The protect-files hook will block...")
 3. Remove slash command references (e.g., "Run `/verify-changes`...")
 4. Replace with natural language triggers (e.g., "When the user asks to verify changes...")

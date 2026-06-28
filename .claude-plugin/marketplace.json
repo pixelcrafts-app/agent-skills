@@ -1,0 +1,116 @@
+{
+  "name": "pixelcrafts",
+  "owner": {
+    "name": "pixelcrafts",
+    "url": "https://github.com/pixelcrafts-app"
+  },
+  "metadata": {
+    "description": "Harness-agnostic standards, skills, and rules for AI coding agents. Generated from skills/ — see scripts/build-claude.sh.",
+    "version": "0.17.0"
+  },
+  "plugins": [
+    {
+      "name": "core-standards",
+      "source": "./plugins/core-standards",
+      "description": "Cross-stack engine and universal skills. work-principles, planning, universal-rules, verification, verify-changes, codebase-index, auth-flows, craft-config, subagent-brief, honesty (no unsourced claims, evidence before done), spec-validator, contracts, challenger, contract-tests, integration, full-setup — production autonomous pipeline from single prompt to verified delivery.",
+      "version": "0.7.0",
+      "category": "skills",
+      "tags": [
+        "skills",
+        "cross-stack",
+        "standards",
+        "engine",
+        "orchestration",
+        "verification",
+        "planning",
+        "auth",
+        "autonomous",
+        "contracts",
+        "honesty"
+      ]
+    },
+    {
+      "name": "flutter-standards",
+      "source": "./plugins/flutter-standards",
+      "description": "Flutter-specific standards — engineering (Dart, widget rules, data layer, api-data patterns), accessibility (Semantics, screen readers, 48dp touch targets), performance (DevTools, frame budget, const widgets). app-audit (full Flutter audit: pre-ship checks + craft quality + screen states). scaffold (feature + screen file structure generator). scan (hardcoded values, duplicate code, a11y patterns). Pair with mobile-standards for craft-guide, production-readiness, forms, and observability.",
+      "version": "1.1.0",
+      "category": "flutter",
+      "tags": [
+        "flutter",
+        "dart",
+        "mobile",
+        "standards",
+        "audit",
+        "scaffold",
+        "accessibility",
+        "performance"
+      ]
+    },
+    {
+      "name": "mobile-standards",
+      "source": "./plugins/mobile-standards",
+      "description": "Mobile-universal standards — craft quality, production readiness, forms, observability, design tokens. Applies to Flutter, React Native, SwiftUI, Jetpack Compose. Auto-invoked by description triggers.",
+      "version": "1.2.0",
+      "category": "mobile",
+      "tags": [
+        "mobile",
+        "standards",
+        "craft",
+        "production",
+        "forms",
+        "observability",
+        "design-tokens"
+      ]
+    },
+    {
+      "name": "api-standards",
+      "source": "./plugins/api-standards",
+      "description": "API pack — NestJS + Prisma. Auto-invoke: nestjs + code-quality standards, cross-stack-contracts (active when craft.json stacks has 2+ entries: unified error shape, cursor pagination, Bearer header standard, versioned routes), websockets (conditional on socket.io/ws usage: connection auth, backoff reconnect, event enum, schema versioning). db-migrations workflow (Prisma schema → migration → client regeneration).",
+      "version": "0.7.0",
+      "category": "api",
+      "tags": [
+        "api",
+        "nestjs",
+        "prisma",
+        "standards",
+        "audit",
+        "security",
+        "documentation",
+        "websockets",
+        "cross-stack"
+      ]
+    },
+    {
+      "name": "web-standards",
+      "source": "./plugins/web-standards",
+      "description": "Web pack — Next.js + Tailwind + shadcn. Auto-invoke: nextjs + production-readiness (§R1–§R10) + craft-guide (§1–§15) standards; premium-signals (market-sourced precise values — shadow formula, OKLCH dark grays, easing, tabular-nums); taste (metric dials: DESIGN_VARIANCE/MOTION_INTENSITY/VISUAL_DENSITY, AI-tells forbidden list); i18n (conditional on next-i18next/react-i18next or locales/ dir). Audit commands delegate to core-standards:verify-changes. extract-tokens writes token source of truth. Platform-agnostic design skills (accessibility, information-architecture, aesthetic-coherence) moved to design-standards plugin.",
+      "version": "0.11.0",
+      "category": "web",
+      "tags": [
+        "web",
+        "nextjs",
+        "react",
+        "tailwind",
+        "shadcn",
+        "standards",
+        "audit"
+      ]
+    },
+    {
+      "name": "design-standards",
+      "source": "./plugins/design-standards",
+      "description": "Platform-agnostic design pack — applies to Web, iOS, and Android. accessibility (WCAG 2.2 + Swift traits + Compose semantics), information-architecture, aesthetic-coherence, design-laws (color strategy axis, anti-AI-slop, absolute visual bans, category-reflex check — from pbakaus/impeccable), brand-research (fact verification before designing + asset collection: logo → product imagery → UI screenshots → color → font), creative-direction (signals that separate memorable from functional-but-forgettable UI).",
+      "version": "0.2.0",
+      "category": "design",
+      "tags": [
+        "design",
+        "accessibility",
+        "wcag",
+        "information-architecture",
+        "brand",
+        "anti-slop",
+        "platform-agnostic"
+      ]
+    }
+  ]
+}

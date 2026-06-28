@@ -4,7 +4,7 @@
 #
 # Usage:
 #   ./scripts/export.sh <harness> <target-project-path> [pack]
-#   harness: cursor | codex | aider
+#   harness: cursor | codex | gemini | aider
 #   pack: all | core | api | web | mobile | flutter | design (default: all)
 #
 # Examples:

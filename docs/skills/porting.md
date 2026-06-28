@@ -2,10 +2,9 @@
 
 ## From Generic Skill to Claude
 
-1. Copy `skills/<category>/<skill>/SKILL.md`
-2. Wrap in Claude plugin metadata if needed
-3. Add slash command in `harnesses/claude/commands/` if applicable
-4. Add hook in `harnesses/claude/hooks/` for deterministic enforcement
+1. Copy `skills/<category>/<skill>/SKILL.md` (or `skills/claude/` for Claude-only skills)
+2. It ships automatically — `scripts/build-claude.sh` packages every skill into the plugin marketplace
+3. Add a slash command in the skill if applicable
 
 ## From Generic Skill to Kimi
 
@@ -29,9 +28,8 @@
 
 ## What Cannot Port
 
-- **Bash hooks** — Claude-only
 - **Slash commands** — Claude-only
 - **State files / audit cache** — Claude-only
 - **MCP integration** — Claude-specific protocol
 
-These remain in `harnesses/claude/` and are not expected to work elsewhere.
+These are Claude-specific and are not expected to work elsewhere.

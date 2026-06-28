@@ -93,45 +93,6 @@ Install: `/plugin install web-standards@pixelcrafts`.
 
 ---
 
-## Hooks plugin (`core-hooks`) — cross-stack
-
-Install: `/plugin install core-hooks@pixelcrafts`.
-
-### PreToolUse hooks
-
-Run on every Edit / Write / Bash:
-
-- `protect-files.sh` — blocks edits to `.env`, `*.key`, `*.pem`, `credentials.json`, and similar secret files
-- `protect-bash.sh` — blocks destructive shell commands (`rm -rf /`, `git reset --hard`, force-push to protected branches, etc.)
-- `enforce-tokens.sh` — blocks raw design values in projects with a token system. Rules live in the stack skill packs; this hook enforces deterministically.
-- `enforce-rules.sh` — **enforcement mode (opt-in)**. When a project commits `.claude/enforcement.json` listing mandatory packs, this hook runs each pack's rule registry against every Edit / Write / MultiEdit and hard-blocks on violation. See [docs/enforcement.md](enforcement.md).
-
-### PostToolUse hooks
-
-Run after every Write / Edit / MultiEdit:
-
-- `post-test.sh` — detects stack from project root (Flutter / Node / Go / Python), runs the appropriate fast test command for the changed file. Exit 2 on test failure forces Claude to fix before the turn proceeds. Fail-open: any detection or runner error returns exit 0 — never strands the user. This is the gate that converts quality from optional ("Claude *should* run tests") to deterministic ("Claude *cannot* skip them").
-
-### Stop hooks
-
-Run at every turn end:
-
-- `stop-gate.sh` — when enforcement mode is active, blocks turn-end if a mandatory pack's gate hasn't passed (see above).
-- `cite-or-read.sh` — scans the final assistant message for file references (e.g. `src/auth/service.ts`, `src/auth/service.ts:42`) and cross-checks the turn's tool calls. If a file was named as fact but never Read/Grep/Glob'd in the same turn, emits a non-blocking WARN to stderr: `[honesty WARN] The final response references files that were not Read/Grep'd in this turn`. Pairs with `core-standards:honesty` — the skill imposes the discipline, the hook surfaces violations that slip through. Non-blocking by design (exit 0) — observability, not a gate.
-
-### SessionStart hook
-
-- `rules-discipline.sh` — surfaces plugin-hook mechanics to Claude. Notably: hooks run in the main session only, not inside subagent writes.
-- `enforcement-preamble.sh` — when enforcement mode is active, injects a pinned preamble listing mandatory skills, rule IDs, and the gate command per pack.
-
-### Stop hook (v0.10.0)
-
-- `stop-gate.sh` — when enforcement mode is active, blocks turn-end if a mandatory pack's files were edited but the pack's gate command (e.g. `/flutter-standards:pre-ship`) has not passed. Claude cannot say "done" until each gate reports SAFE TO COMMIT.
-
-No slash commands. Runs automatically.
-
----
-
 ## Cross-stack skills plugin (`core-standards`)
 
 Install: `/plugin install core-standards@pixelcrafts`.
@@ -148,7 +109,7 @@ Install: `/plugin install core-standards@pixelcrafts`.
 | subagent-brief | Any time the model considers delegating to Agent / Task / Explore / Plan / general-purpose subagent | Enforces warm-brief discipline: goal + known context (paths + lines) + hard scope + output shape + budget. A subagent given "figure it out" burns 3–10× the tokens of one given specifics. |
 | verify-changes | User says "verify my changes" / "cross-check" / "audit what I did" / ends a non-trivial chunk of work | Generic cross-stack verification workflow. Asks scope + dimensions + depth. Builds a dependency graph. Verifies rule-by-rule from whichever SKILL.md files are installed. Integrates with `codebase-index` to skip unchanged files on repeat audits. Emits critical / polish / consumer-break verdict with cache-hit count. Pure prompt — no hooks, no external tools. |
 | codebase-index | Loaded by verify-changes at Phase 0 | Persistent audit cache keyed by git blob hash. Protocol: `git diff --name-only` identifies always-miss files; `git ls-files -s` supplies index hashes for unchanged files; findings stored in the project's audit-cache state file per `{path, dimension}`. Eliminates re-reading unchanged files across repeated audits — ~78% token reduction on a 2000-file repo audited 5 times. |
-| honesty | Always-loaded — every response | The answer-layer discipline. Three rules: (1) any factual claim about the codebase requires a `path:line` citation backed by an actual Read/Grep in this turn; (2) when no source was read, the only valid answer is "I don't know — checking" followed by a Read; (3) evidence required before declaring *fixed / passing / done* — cite the command and its output, not the diff. Catches the failure mode that verify-changes can't: wrong **claims about** code, not wrong code. Pairs with `core-hooks:cite-or-read` (Stop hook) which surfaces violations to stderr. |
+| honesty | Always-loaded — every response | The answer-layer discipline. Three rules: (1) any factual claim about the codebase requires a `path:line` citation backed by an actual Read/Grep in this turn; (2) when no source was read, the only valid answer is "I don't know — checking" followed by a Read; (3) evidence required before declaring *fixed / passing / done* — cite the command and its output, not the diff. Catches the failure mode that verify-changes can't: wrong **claims about** code, not wrong code. |
 
 #### Autonomous pipeline (production)
 
