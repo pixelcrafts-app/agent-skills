@@ -1,153 +1,49 @@
 ---
 name: challenger
-description: Adversarial review protocol. Challenger receives fresh context — never saw the implementation process. Reads only the output and asks what is wrong with it. Blocks on critical findings. Feeds findings to the Test Writer. Defeats done-delusion and hallucintion compounding.
+description: Adversarial review protocol. Challenger gets fresh context — never saw the implementation process. Reads only the output and asks what's wrong. Blocks on critical findings, feeds them to the Test Writer. Defeats done-delusion and compounding hallucination.
 requires:
-  - subagent-brief   # "Receives a CLEAN context window" = a fresh subagent spawn governed by warm-brief discipline
+  - subagent-brief
 ---
 
 # Challenger
 
-## What it solves
+The agent that wrote the code optimizes for passing its own tests and rationalizes gaps. A challenger with **fresh context** sees only the output and asks "what's wrong with this?" — breaking done-delusion.
 
-The agent that writes code optimizes for passing its own tests. It rationalizes gaps rather than surfaces them. A challenger agent has never seen the implementation process — it sees only the output and asks: "what is wrong with this?" This breaks done-delusion and catches compounding hallucinations that no single agent in the chain could see.
+## When
 
-## When to invoke
+After contracts are written (before locking) · after each implementation phase (before integration) · before the final reviewer. Never mid-implementation — review complete outputs, not drafts.
 
-- After contracts are written (before locking) — Challenger reviews contracts
-- After each implementation phase completes (before integration) — Challenger reviews output
-- Before final reviewer runs — Challenger reviews all diffs
-
-Never invoke mid-implementation. Challenger reviews complete outputs, not drafts.
-
----
-
-## Context injection (exactly this format — no deviation)
-
-Challenger receives a CLEAN context window. It must NOT receive:
-- The implementer's reasoning or process
-- Conversation history
-- Implementation files beyond what is pasted
+## Injection brief (clean context — no implementer reasoning, no history, only what's pasted)
 
 ```
-GOAL
-  Challenge the following output for correctness and completeness.
-  Be adversarial. Assume something is wrong.
-
+GOAL  Challenge this output for correctness/completeness. Be adversarial; assume something is wrong.
 CONTEXT
-  Spec/contract being satisfied:
-  ---
-  <paste spec.md or contract content>
-  ---
-
-  Output being challenged:
-  ---
-  <paste the implementation output, diffs, or contract being reviewed>
-  ---
-
-SCOPE
-  Challenge only what is in the CONTEXT section above.
-  Do not investigate files not pasted here.
-  Do not suggest alternative implementations.
-
-TASK
-  Ask exactly three questions and answer each:
+  Spec/contract: --- <paste> ---
+  Output challenged: --- <paste diffs/impl/contract> ---
+SCOPE  Only what's in CONTEXT. Don't investigate unpasted files. Don't suggest alternatives.
+TASK   Ask and answer exactly three:
   1. In what specific scenario does this break?
-  2. What assumption did the author make that is likely wrong?
-  3. What does the spec/contract require that is missing here?
-
-OUTPUT
-  A findings list. For each finding:
-
-  severity: BLOCK | WARN | INFO
-  location: <file:line or section name>
-  finding: <one sentence — what is wrong>
-  scenario: <one sentence — the exact situation where this breaks>
-
-  BLOCK = implementation cannot proceed until fixed
-  WARN  = must be addressed before final reviewer runs
-  INFO  = noted, author's judgment
-
-  Maximum 10 findings. If more than 10 exist, report the 10 highest severity.
-  If nothing is wrong: return "PASS — no findings."
+  2. What assumption did the author make that's likely wrong?
+  3. What does the spec require that's missing here?
+OUTPUT  Findings (max 10, highest severity first), each:
+  severity: BLOCK|WARN|INFO · location: file:line · finding: <one sentence> · scenario: <where it breaks>
+  Nothing wrong → "PASS — no findings."
 ```
 
----
+## Severity
 
-## Severity thresholds
+- **BLOCK** — primary use case fails · contradicts a locked contract/acceptance test · security hole (unauthed endpoint, exposed secret, unsanitized input) · possible data loss.
+- **WARN** — unhandled edge case (primary works) · missing error state · unaddressed spec perf/platform constraint.
+- **INFO** — style/naming · a cleaner alternative (current is correct) · future concern.
 
-### BLOCK when:
-- The output causes the primary use case to fail
-- The output contradicts a locked contract or locked acceptance test
-- A security vulnerability is present (unauthed endpoint, exposed secret, unsanitized input)
-- Data loss or corruption is possible
+## Re-review loop
 
-### WARN when:
-- An edge case is unhandled but primary use case works
-- A missing error state would degrade user experience
-- A performance or platform constraint from the spec is not addressed
+After a BLOCK is addressed: Challenger gets fresh context with **only** that change → PASS removes the BLOCK, FAIL keeps it. **Max 3 rounds**; if it persists, write `ESCALATED` (reason + the BLOCK finding + "requires human review") to the shared progress state and stop — don't continue to the next task.
 
-### INFO when:
-- Style or naming deviation (not a correctness issue)
-- An alternative approach would be cleaner but the current one is correct
-- A future concern worth noting but not blocking now
+## Discipline
 
----
+Must: assume something is wrong; give concrete scenarios; report PASS only when genuinely nothing meaningful is found. Must not: suggest refactors/better implementations; flag naming/format/style as BLOCK/WARN; ask for features not in the spec; give vague "could be improved" findings; modify any file (read-only).
 
-## Re-review protocol
+## Integration Challenger (once, after all contracts implemented, before Integration)
 
-After implementer addresses a BLOCK:
-
-1. Challenger receives new clean context with ONLY the change made to address the BLOCK
-2. Challenger reviews only that change
-3. PASS → BLOCK removed, implementation proceeds
-4. FAIL → BLOCK remains
-
-Maximum 3 rounds. If BLOCK persists after 3 rounds:
-- Write to the project's shared progress state file (apply standard state-file ownership and lifecycle discipline):
-  ```
-  task <N>: ESCALATED
-  reason: challenger BLOCK unresolved after 3 rounds
-  finding: <paste the BLOCK finding>
-  requires: human review
-  ```
-- Stop. Do not continue to next task.
-
----
-
-## Challenger discipline
-
-### What it must do
-- Assume something is wrong, even if nothing obvious stands out
-- Give specific scenarios, not general statements
-- Report "PASS" only when it genuinely cannot find a meaningful issue
-
-### What it must not do
-- Suggest refactors or better implementations (not its job)
-- Review naming, formatting, or style as BLOCK or WARN
-- Ask for features not in the spec
-- Give vague findings like "this could be improved" — every finding needs a scenario
-- Modify any files — Challenger is read-only
-
----
-
-## Integration Challenger
-
-Before the Integration agent runs, a special Challenger pass reviews ACROSS all implemented contracts:
-
-```
-GOAL
-  Challenge the integration of these implementations for boundary mismatches.
-
-CONTEXT
-  Contract A: <paste>
-  Contract B: <paste>
-  Implementation A summary: <paste key interfaces>
-  Implementation B summary: <paste key interfaces>
-
-TASK
-  1. Where do the types not match at the boundary between A and B?
-  2. What does implementation A assume about B that B does not guarantee?
-  3. What shared state or side effect could cause A and B to conflict?
-```
-
-This pass runs once, after all contracts are implemented, before Integration begins.
+Same clean-context brief, but across contracts: paste Contract A+B and their key interfaces, then ask: (1) where do types not match at the A↔B boundary? (2) what does A assume about B that B doesn't guarantee? (3) what shared state/side effect could make A and B conflict?

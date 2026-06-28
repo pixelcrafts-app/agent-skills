@@ -1,251 +1,91 @@
 ---
 name: docker-patterns
-description: Docker and Docker Compose patterns for local development, container security, networking, volume strategies, and multi-service orchestration.
-origin: ECC
+description: Docker + Docker Compose patterns for local dev, container security, networking, volumes, multi-service orchestration. Apply when writing/reviewing Dockerfiles or compose files.
 ---
 
 # Docker Patterns
 
-## Triggers
+> Templates below are starting points — adjust images/ports to the stack. The Hard Rules at the bottom are non-negotiable.
 
-- Setting up Docker Compose for local dev
-- Designing multi-container architecture
-- Troubleshooting container networking or volume issues
-- Reviewing Dockerfiles for security and image size
-- Migrating from local to containerized workflow
-
-## Standard Web App Stack
+## Compose (dev stack)
 
 ```yaml
-# docker-compose.yml
 services:
   app:
-    build:
-      context: .
-      target: dev                     # dev stage of multi-stage Dockerfile
-    ports:
-      - "3000:3000"
+    build: { context: ., target: dev }   # multi-stage; dev stage
+    ports: ["3000:3000"]
     volumes:
-      - .:/app                        # bind mount for hot reload
-      - /app/node_modules             # anonymous volume — protects container deps
-    environment:
-      - DATABASE_URL=postgres://postgres:postgres@db:5432/app_dev
-      - REDIS_URL=redis://redis:6379/0
-      - NODE_ENV=development
-    depends_on:
-      db:
-        condition: service_healthy
-    command: npm run dev
-
+      - .:/app                 # source bind-mount (hot reload)
+      - /app/node_modules      # anonymous volume protects container deps
+    environment: [DATABASE_URL=postgres://postgres:postgres@db:5432/app_dev, NODE_ENV=development]
+    depends_on: { db: { condition: service_healthy } }
   db:
-    image: postgres:16-alpine
-    ports:
-      - "5432:5432"
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: app_dev
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 5s
-      timeout: 3s
-      retries: 5
-
-  redis:
-    image: redis:7-alpine
-    volumes:
-      - redisdata:/data
-
-  mailpit:
-    image: axllent/mailpit
-    ports:
-      - "8025:8025"   # web UI
-      - "1025:1025"   # SMTP
-
-volumes:
-  pgdata:
-  redisdata:
+    image: postgres:16-alpine   # pin — never :latest
+    ports: ["127.0.0.1:5432:5432"]   # localhost-only, don't expose externally
+    environment: { POSTGRES_PASSWORD: postgres, POSTGRES_DB: app_dev }
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck: { test: ["CMD-SHELL","pg_isready -U postgres"], interval: 5s, retries: 5 }
+volumes: { pgdata: }
 ```
 
-## Multi-Stage Dockerfile
+Containers resolve each other by service name (`postgres://db:5432`). Isolate tiers with networks (db on `backend-net` only, unreachable from frontend). `docker-compose.override.yml` auto-loads in dev (debug ports/env); `-f docker-compose.prod.yml` explicit for prod (`target: production`, `restart: always`, resource limits).
+
+## Multi-stage Dockerfile
 
 ```dockerfile
 FROM node:22-alpine AS deps
 WORKDIR /app
-COPY package.json package-lock.json ./
-RUN npm ci
-
-FROM node:22-alpine AS dev
-WORKDIR /app
-COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-EXPOSE 3000
-CMD ["npm", "run", "dev"]
+COPY package*.json ./ && RUN npm ci
 
 FROM node:22-alpine AS build
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
-COPY . .
-RUN npm run build && npm prune --production
+COPY . . && RUN npm run build && npm prune --production
 
-FROM node:22-alpine AS production
+FROM node:22.12-alpine3.20 AS production   # pin exact tag
 WORKDIR /app
-RUN addgroup -g 1001 -S appgroup && adduser -S appuser -u 1001
-USER appuser
-COPY --from=build --chown=appuser:appgroup /app/dist ./dist
-COPY --from=build --chown=appuser:appgroup /app/node_modules ./node_modules
-COPY --from=build --chown=appuser:appgroup /app/package.json ./
-ENV NODE_ENV=production
-EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/health || exit 1
-CMD ["node", "dist/server.js"]
-```
-
-## Override Files
-
-```yaml
-# docker-compose.override.yml — auto-loaded in dev
-services:
-  app:
-    environment:
-      - DEBUG=app:*
-    ports:
-      - "9229:9229"   # Node debugger
-
-# docker-compose.prod.yml — explicit for production
-services:
-  app:
-    build:
-      target: production
-    restart: always
-    deploy:
-      resources:
-        limits:
-          cpus: "1.0"
-          memory: 512M
-```
-
-```bash
-docker compose up                                                    # dev (auto-loads override)
-docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d  # prod
-```
-
-## Networking
-
-```yaml
-# Service discovery: containers resolve by service name
-# postgres://db:5432  redis://redis:6379
-
-# Isolate db from frontend
-services:
-  frontend: { networks: [frontend-net] }
-  api:      { networks: [frontend-net, backend-net] }
-  db:       { networks: [backend-net] }   # unreachable from frontend
-
-networks:
-  frontend-net:
-  backend-net:
-
-# Bind to localhost only — don't expose db to Docker network externally
-services:
-  db:
-    ports:
-      - "127.0.0.1:5432:5432"
-```
-
-## Volume Strategies
-
-```yaml
-services:
-  app:
-    volumes:
-      - .:/app                   # source code (hot reload)
-      - /app/node_modules        # protect container's node_modules from host overlay
-      - /app/.next               # protect build cache
-
-  db:
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-      - ./scripts/init.sql:/docker-entrypoint-initdb.d/init.sql
-```
-
-## Container Security
-
-```dockerfile
-FROM node:22.12-alpine3.20            # pin exact tags — never :latest
 RUN addgroup -g 1001 -S app && adduser -S app -u 1001
-USER app                              # never run as root
+USER app                                   # never root
+COPY --from=build --chown=app:app /app/dist ./dist
+COPY --from=build --chown=app:app /app/node_modules ./node_modules
+ENV NODE_ENV=production
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -qO- http://localhost:3000/health || exit 1
+CMD ["node","dist/server.js"]
 ```
+
+## Security
 
 ```yaml
 services:
   app:
-    security_opt:
-      - no-new-privileges:true
+    security_opt: [no-new-privileges:true]
     read_only: true
     tmpfs: [/tmp, /app/.cache]
     cap_drop: [ALL]
-    cap_add: [NET_BIND_SERVICE]       # only if binding ports < 1024
+    cap_add: [NET_BIND_SERVICE]   # only if binding ports <1024
+    env_file: [.env]              # gitignored; never ENV secrets in the image
 ```
 
-```yaml
-# Secrets — never hardcode in image or compose file
-services:
-  app:
-    env_file: [.env]                  # gitignored
-    environment:
-      - API_KEY                       # inherits from host
+`.dockerignore`: `node_modules .git .env .env.* dist coverage *.log .next Dockerfile* docker-compose*.yml tests/`.
 
-# BAD: ENV API_KEY=sk-proj-xxxxx in Dockerfile
-```
-
-## .dockerignore
-
-```
-node_modules
-.git
-.env
-.env.*
-dist
-coverage
-*.log
-.next
-.cache
-docker-compose*.yml
-Dockerfile*
-tests/
-```
-
-## Debug Commands
+## Debug
 
 ```bash
-docker compose logs -f app                    # stream app logs
-docker compose logs --tail=50 db             # last 50 db lines
-docker compose exec app sh                   # shell into app
-docker compose exec db psql -U postgres      # connect to postgres
-docker compose ps                            # service status
-docker stats                                 # resource usage
-docker compose up --build                    # rebuild images
-docker compose build --no-cache app          # force full rebuild
-docker compose down -v                       # DESTRUCTIVE: stop + remove volumes
-docker system prune                          # remove unused images/containers
-
-# Network debug
-docker compose exec app nslookup db
-docker compose exec app wget -qO- http://api:3000/health
-docker network inspect <project>_default
+docker compose logs -f app          # stream logs
+docker compose exec app sh          # shell in
+docker compose exec db psql -U postgres
+docker compose up --build           # rebuild
+docker compose down -v              # DESTRUCTIVE: removes volumes
+docker compose exec app nslookup db # network debug
 ```
 
-## Hard Rules
+## Hard rules
 
 | Wrong | Right |
 |-------|-------|
-| `:latest` tag | Pin exact version (`postgres:16-alpine`) |
-| Run as root | Non-root user in Dockerfile |
-| Data in container (no volume) | Named volume for any persistent data |
-| Secrets in `docker-compose.yml` | `.env` file (gitignored) |
-| One container for all services | One process per container |
-| `docker compose` in production bare | Kubernetes / ECS / Swarm for orchestration |
+| `:latest` | pin exact version |
+| run as root | non-root user |
+| data without a volume | named volume for persistence |
+| secrets in compose/Dockerfile | `.env` (gitignored) |
+| all services in one container | one process per container |
+| bare `docker compose` in prod | Kubernetes / ECS / Swarm |
