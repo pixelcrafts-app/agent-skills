@@ -1,9 +1,19 @@
-spec_version: "0.1.0"
-name: claude-craft
-version: 0.1.0
-description: "Harness-agnostic skill and agent system for AI-assisted development. Works with Claude Code, OpenAI Agents SDK, Cursor, and any agentic harness."
+spec_version: "0.2.0"
+name: agent-skills
+version: 0.17.0
+description: "Harness-agnostic skill and agent system for AI-assisted development. Works with Claude Code, Kimi Code CLI, Cursor, OpenAI Codex, and Aider."
 author: pixelcrafts
 license: MIT
+harnesses:
+  - claude
+  - kimi
+  - cursor
+  - codex
+  - aider
 skills:
-  - pre-ship
-
+  - work-principles
+  - planning
+  - universal-rules
+  - verification
+  - subagent-brief
+  - honesty

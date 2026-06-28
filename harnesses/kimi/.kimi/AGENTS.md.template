@@ -1,0 +1,27 @@
+# {{PROJECT_NAME}} — Kimi Instructions
+
+Brief project description.
+
+## Active Stacks
+
+- web — `pc-web-standards` skill applies
+- core — `pc-work-principles`, `pc-planning`, `pc-universal-rules`, `pc-verification`
+
+## Scope Boundaries
+
+- Auth lives in `pixelcrafts-api-auth`. Do not reimplement auth here.
+- AI calls go through `pixelcrafts-api-ai`. No direct OpenAI/Anthropic SDK usage.
+- External docs: link any relevant specs or READMEs.
+
+## Project-Specific Rules
+
+- Add rules specific to this project.
+- Example: "All outbound fetch calls use `AbortSignal.timeout()`"
+- Example: "Archived code goes to `_unused/` (gitignored), never deleted"
+
+## End-of-Task
+
+- Type check must pass
+- Lint must pass
+- Tests must pass
+- Do not push without explicit instruction
