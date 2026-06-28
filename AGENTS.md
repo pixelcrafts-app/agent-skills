@@ -10,7 +10,7 @@ It is consumed by different AI coding tools through harness-specific adapters:
 | **Kimi Code CLI** | [docs/agents/kimi.md](docs/agents/kimi.md) | Global skills + `.kimi/AGENTS.md` |
 | **Cursor** | [docs/agents/cursor.md](docs/agents/cursor.md) | Exported `.cursor/rules/*.mdc` |
 | **OpenAI Codex** | [docs/agents/codex.md](docs/agents/codex.md) | Exported `AGENTS.md` |
-| **Aider** | [docs/agents/aider.md](docs/agents/aider.md) | Exported `.aider/conventions.md` |
+| **Gemini CLI** | [docs/agents/gemini.md](docs/agents/gemini.md) | Exported `GEMINI.md` |
 
 ## What Lives Where
 
@@ -35,4 +35,4 @@ If you are unsure which to use:
 
 - **Claude Code** → richest experience (plugins, slash commands, state)
 - **Kimi Code CLI** → simplest setup (one `AGENTS.md` per project)
-- **Cursor/Codex/Aider** → static rule export
+- **Cursor/Codex/Gemini** → static rule export

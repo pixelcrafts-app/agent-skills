@@ -7,7 +7,7 @@ description: Apply when setting up a new project, or when the project config (cr
 
 `craft.json` is the project-level configuration that tells the verification system which skills apply to this project. It removes the need for verification to guess from file types alone.
 
-> **Harness note:** The file is conventionally named `craft.json`. Its directory is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex/Aider, or the project root when no agent-state directory exists. This skill refers to it generically as `<project-state-dir>/craft.json`.
+> **Harness note:** The file is conventionally named `craft.json`. Its directory is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex, or the project root when no agent-state directory exists. This skill refers to it generically as `<project-state-dir>/craft.json`.
 
 ---
 

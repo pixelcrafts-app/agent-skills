@@ -63,7 +63,7 @@ OUTPUT
   Write to the project's progress state file before returning.
   Return compact summary: acceptance tests pass/total, any remaining failures.
 
-> **Harness note:** `<project-state-dir>` is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex/Aider, or the project root when no agent-state directory exists.
+> **Harness note:** `<project-state-dir>` is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex, or the project root when no agent-state directory exists.
 ```
 
 ---

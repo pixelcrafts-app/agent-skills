@@ -3,7 +3,7 @@
 # Detects the active harness or accepts one as an argument.
 #
 # Usage:
-#   ./scripts/install.sh [claude|kimi|cursor|codex|aider]
+#   ./scripts/install.sh [claude|kimi|cursor|codex|gemini]
 
 set -euo pipefail
 
@@ -16,7 +16,7 @@ if [[ "$HARNESS" == "auto" ]]; then
   elif command -v kimi >/dev/null 2>&1; then
     HARNESS="kimi"
   else
-    echo "Could not detect harness. Please specify one of: claude, kimi, cursor, codex, aider" >&2
+    echo "Could not detect harness. Please specify one of: claude, kimi, cursor, codex, gemini" >&2
     exit 1
   fi
 fi
@@ -39,9 +39,9 @@ case "$HARNESS" in
     echo "Codex requires a target project path."
     echo "Usage: ./harnesses/codex/export.sh <target-project-path>"
     ;;
-  aider)
-    echo "Aider requires a target project path."
-    echo "Usage: ./harnesses/aider/export.sh <target-project-path>"
+  gemini)
+    echo "Gemini requires a target project path."
+    echo "Usage: ./harnesses/gemini/export.sh <target-project-path>"
     ;;
   *)
     echo "unknown harness: $HARNESS" >&2

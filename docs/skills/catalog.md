@@ -1,6 +1,6 @@
 # Skills Catalog
 
-Seven plugins ship. Every standard, audit, scaffold, and agent is listed here with what it does and when it fires.
+Six plugins ship. Every standard, audit, scaffold, and agent is listed here with what it does and when it fires.
 
 **Two kinds of skill:**
 - **Auto-invoke standards** — no slash command. Claude loads them when it sees matching work (a `.dart` file triggers Flutter standards; `src/**/*.ts` triggers API standards).
@@ -137,7 +137,7 @@ Install either / both alongside any pack — they apply regardless of stack.
 
 ## Use without Claude Code
 
-Cursor, Antigravity, Codex, Aider, OpenAI SWE — export tool-native files from the same source:
+Cursor, Antigravity, Codex, OpenAI SWE — export tool-native files from the same source:
 
 ```bash
 git clone https://github.com/pixelcrafts-app/agent-skills
@@ -146,7 +146,7 @@ git clone https://github.com/pixelcrafts-app/agent-skills
 
 Outputs:
 - `.cursor/rules/<pack>-<skill>.mdc` — Cursor Rules v2 (YAML frontmatter, scoped globs)
-- `AGENTS.md` — concatenated standards for Antigravity, Codex, Aider, OpenAI SWE
+- `AGENTS.md` — concatenated standards for Antigravity, Codex, OpenAI SWE
 
 Re-run anytime to refresh.
 

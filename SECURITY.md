@@ -24,7 +24,7 @@ In-scope:
 Out-of-scope:
 
 - Issues in Claude Code itself — report to [Anthropic](https://claude.com/claude-code)
-- Issues in third-party tools consuming the export output (Cursor, Antigravity, Codex, Aider)
+- Issues in third-party tools consuming the export output (Cursor, Antigravity, Codex)
 - Issues in the user's own project where a skill was installed
 
 ## Safe-harbour

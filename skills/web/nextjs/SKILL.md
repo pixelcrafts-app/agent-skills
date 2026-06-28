@@ -8,7 +8,7 @@ description: Apply when writing or reviewing Next.js + React + Tailwind + shadcn
 > **Ownership**: Generic Next.js patterns — reusable across any Next.js + Tailwind + shadcn/ui project.
 > App-specific values (tokens, container widths, brand colors, API clients) belong in your project's instructions file or a local app-level rule.
 >
-> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex/Aider, `.cursor/rules/*.mdc` for Cursor.
+> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex, `.cursor/rules/*.mdc` for Cursor.
 
 Concrete code patterns for Next.js app router, React components, Tailwind CSS, and shadcn/ui.
 

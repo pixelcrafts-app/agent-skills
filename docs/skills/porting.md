@@ -20,10 +20,10 @@
 2. Add YAML frontmatter with scoped globs
 3. Save as `.cursor/rules/<category>-<skill>.mdc`
 
-## From Generic Skill to Codex / Aider
+## From Generic Skill to Codex / Gemini
 
 1. Copy `skills/<category>/<skill>/SKILL.md`
-2. Append to `AGENTS.md` or `.aider/conventions.md`
+2. Append to `AGENTS.md` (Codex) or `GEMINI.md` (Gemini)
 3. Group by category
 
 ## What Cannot Port

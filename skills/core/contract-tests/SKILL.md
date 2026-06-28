@@ -19,7 +19,7 @@ After all contracts are locked, before any implementation begins.
 - `<project-state-dir>/acceptance-tests.md` — for awareness of end-to-end criteria
 - Existing test patterns in `tests/` — to match project conventions
 
-> **Harness note:** `<project-state-dir>` is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex/Aider, or the project root when no agent-state directory exists.
+> **Harness note:** `<project-state-dir>` is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex, or the project root when no agent-state directory exists.
 
 The Test Writer must NOT read any `src/` files. Tests come from contracts, not from code.
 

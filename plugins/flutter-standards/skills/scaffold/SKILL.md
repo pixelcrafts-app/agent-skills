@@ -12,7 +12,7 @@ Scaffold a new Flutter feature or screen for `$ARGUMENTS`.
 
 Before writing any files, read the project-instructions file, any local override file, and `pubspec.yaml` to detect:
 
-> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex/Aider, `.cursor/rules/*.mdc` for Cursor.
+> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex, `.cursor/rules/*.mdc` for Cursor.
 
 - State management (`flutter_riverpod`, `provider`, `flutter_bloc`, `StatefulWidget`)
 - Design-system prefix (grep `class \w+Colors` in `lib/shared/` or `lib/core/`)

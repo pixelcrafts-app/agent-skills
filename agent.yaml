@@ -1,7 +1,7 @@
 spec_version: "0.2.0"
 name: agent-skills
 version: 0.17.0
-description: "Harness-agnostic skill and agent system for AI-assisted development. Works with Claude Code, Kimi Code CLI, Cursor, OpenAI Codex, Gemini CLI, and Aider."
+description: "Harness-agnostic skill and agent system for AI-assisted development. Works with Claude Code, Kimi Code CLI, Cursor, OpenAI Codex, and Gemini CLI."
 author: pixelcrafts
 license: MIT
 harnesses:
@@ -10,7 +10,6 @@ harnesses:
   - cursor
   - codex
   - gemini
-  - aider
 skills:
   - work-principles
   - planning

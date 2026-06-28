@@ -4,19 +4,19 @@
 #
 # Usage:
 #   ./scripts/export.sh <harness> <target-project-path> [pack]
-#   harness: cursor | codex | gemini | aider
+#   harness: cursor | codex | gemini
 #   pack: all | core | api | web | mobile | flutter | design (default: all)
 #
 # Examples:
 #   ./scripts/export.sh cursor ~/work/my-flutter-app flutter
 #   ./scripts/export.sh codex ~/work/my-api api
-#   ./scripts/export.sh aider ~/work/my-web web
+#   ./scripts/export.sh gemini ~/work/my-web web
 
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-HARNESS="${1:?usage: export.sh <cursor|codex|aider> <target-project-path> [pack]}"
-TARGET="${2:?usage: export.sh <cursor|codex|aider> <target-project-path> [pack]}"
+HARNESS="${1:?usage: export.sh <cursor|codex|gemini> <target-project-path> [pack]}"
+TARGET="${2:?usage: export.sh <cursor|codex|gemini> <target-project-path> [pack]}"
 PACK="${3:-all}"
 
 SCRIPT="$ROOT/harnesses/$HARNESS/export.sh"

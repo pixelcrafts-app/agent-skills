@@ -1,6 +1,6 @@
 # Cross-Model Compatibility Analysis
 
-> Question: Does the generic `agent-skills` structure work automatically for every harness — Claude, Cursor, Codex, Gemini, Aider, Kimi?
+> Question: Does the generic `agent-skills` structure work automatically for every harness — Claude, Cursor, Codex, Gemini, Kimi?
 
 **Short answer: No — but it gets you most of the way.**
 
@@ -26,16 +26,16 @@ The value is **content reuse**, not **behavioral parity**.
 
 ## Capability Matrix
 
-| Capability | Claude Code | Kimi Code CLI | Cursor | Codex | Gemini CLI | Aider |
-|------------|-------------|---------------|--------|-------|------------|-------|
-| Plugin packaging | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
-| Slash commands | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
-| State files / audit cache | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No | ❌ No |
-| Multi-agent orchestration | ✅ Yes | ⚠️ Limited | ❌ No | ❌ No | ❌ No | ❌ No |
-| Per-project config directory | `.claude/` | `.kimi/` | `.cursor/` | none | none | `.aider/` |
-| Global skill install | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No | ❌ No | ❌ No |
-| Static rules export | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
-| Natural language triggers | ✅ Yes | ✅ Yes | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
+| Capability | Claude Code | Kimi Code CLI | Cursor | Codex | Gemini CLI |
+|------------|-------------|---------------|--------|-------|------------|
+| Plugin packaging | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
+| Slash commands | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
+| State files / audit cache | ✅ Yes | ❌ No | ❌ No | ❌ No | ❌ No |
+| Multi-agent orchestration | ✅ Yes | ⚠️ Limited | ❌ No | ❌ No | ❌ No |
+| Per-project config directory | `.claude/` | `.kimi/` | `.cursor/` | none | none |
+| Global skill install | ✅ Yes | ✅ Yes | ✅ Yes | ❌ No | ❌ No |
+| Static rules export | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes | ✅ Yes |
+| Natural language triggers | ✅ Yes | ✅ Yes | ⚠️ Partial | ⚠️ Partial | ⚠️ Partial |
 
 ---
 
@@ -90,7 +90,7 @@ The autonomous pipeline (`spec-validator → contracts → contract-tests → in
 **Impact:**
 - Kimi has Agent/Task/Explore tools but weaker observation
 - Cursor has Composer but different semantics
-- Codex / Gemini / Aider are single-agent
+- Codex / Gemini are single-agent
 
 **Workaround:**
 - Run the pipeline as a single long prompt
@@ -141,11 +141,6 @@ Model Context Protocol servers are a Claude Code convention.
 - Same shape as Codex — one concatenated context file, auto-loaded.
 - Loses: structured skill loading, commands, state.
 
-### Aider
-- **Convention files** (`.aider/conventions.md`).
-- Gets: coding conventions and review checklists.
-- Loses: commands, multi-agent, state.
-
 ---
 
 ## What This Means for the Product
@@ -177,7 +172,7 @@ You cannot claim that `agent-skills` works the same across all tools. The honest
 2. **Maintain per-harness adapters** — one adapter per supported tool.
 3. **Document limitations honestly** — every harness guide should say what is lost.
 4. **Invest in Kimi** — it is the closest to Claude in terms of skill loading.
-5. **Deprioritize Cursor/Codex/Gemini/Aider parity** — static export is good enough.
+5. **Deprioritize Cursor/Codex/Gemini parity** — static export is good enough.
 6. **Do not promise automatic behavior** — promise content reuse + best-effort adaptation.
 
 ---

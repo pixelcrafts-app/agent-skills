@@ -4,12 +4,12 @@
 # All harnesses read from the same single source of truth: skills/<category>/<name>/SKILL.md
 #
 # Two delivery modes sit behind this one command:
-#   export  → writes a rules/context file into a target project (cursor, codex, gemini, aider)
+#   export  → writes a rules/context file into a target project (cursor, codex, gemini)
 #   install → installs into the harness itself (claude plugins, kimi global skills)
 #
 # Usage:
 #   ./scripts/deploy.sh <harness> [target-project-path] [pack]
-#   harness: claude | kimi | cursor | codex | gemini | aider
+#   harness: claude | kimi | cursor | codex | gemini
 #   pack:    all | core | api | web | mobile | flutter | design (default: all)
 #
 # Examples:
@@ -21,12 +21,12 @@
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-HARNESS="${1:?usage: deploy.sh <claude|kimi|cursor|codex|gemini|aider> [target] [pack]}"
+HARNESS="${1:?usage: deploy.sh <claude|kimi|cursor|codex|gemini> [target] [pack]}"
 TARGET="${2:-}"
 PACK="${3:-all}"
 
 case "$HARNESS" in
-  cursor|codex|gemini|aider)
+  cursor|codex|gemini)
     if [[ -z "$TARGET" ]]; then
       echo "harness '$HARNESS' is an export target and needs a project path." >&2
       echo "usage: deploy.sh $HARNESS <target-project-path> [pack]" >&2
@@ -44,7 +44,7 @@ case "$HARNESS" in
     ;;
   *)
     echo "unknown harness: $HARNESS" >&2
-    echo "expected one of: claude kimi cursor codex gemini aider" >&2
+    echo "expected one of: claude kimi cursor codex gemini" >&2
     exit 1
     ;;
 esac

@@ -27,7 +27,7 @@ Look, in this order, for what the project already declares:
 5. **Figma export JSON / Tokens Studio** — if committed under `tokens/` or `design-tokens/`
 6. **Project instructions file** — the project may declare aliases, prefixes, ratios
 
-> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex/Aider, `.cursor/rules/*.mdc` for Cursor.
+> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex, `.cursor/rules/*.mdc` for Cursor.
 
 Read each. Do not infer. If Tailwind v4 `@theme` is used, that's the source; ignore defaults.
 

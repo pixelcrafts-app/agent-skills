@@ -13,11 +13,11 @@ skills/                               Generic, harness-independent skills (singl
   flutter/                            Flutter-specific skills
   design/                             Platform-agnostic design skills
 harnesses/                            Per-harness adapters
-  claude/                             .claude/, hooks, slash commands, Claude-specific skills
-  kimi/                               install.sh, AGENTS.md template, Kimi skill wrappers
+  claude/                             .claude-plugin/ manifest templates
+  kimi/                               install.sh, AGENTS.md template, overrides/
   cursor/                             export.sh
   codex/                              export.sh
-  aider/                              export.sh
+  gemini/                             export.sh
 scripts/                              Generic install + export scripts
 agent.yaml                            Harness-agnostic manifest
 ```
@@ -38,7 +38,7 @@ One copy. No build step. Edit and commit:
 1. Edit the skill file — the path depends on the skill scope:
    - Generic stack skill: `skills/<stack>/<name>/SKILL.md`
    - Generic cross-stack skill: `skills/core/<name>/SKILL.md`
-   - Claude-harness adapter: `harnesses/claude/<name>/SKILL.md`
+   - Claude-only skill: `skills/claude/<name>/SKILL.md`
 2. If a Claude plugin bundle needs a version bump, edit the relevant `harnesses/claude/.claude-plugin/*.json` file
 3. Add a line to [docs/changelog.md](changelog.md)
 4. Update the skill row in [docs/skills/catalog.md](catalog.md) if behavior changed

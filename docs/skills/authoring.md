@@ -1,6 +1,6 @@
 # Authoring a Skill
 
-All skills in this repo are **harness-agnostic** and **self-contained**. They are consumed by Claude, Kimi, Cursor, Codex, and Aider through harness adapters.
+All skills in this repo are **harness-agnostic** and **self-contained**. They are consumed by Claude, Kimi, Cursor, Codex, and Gemini through harness adapters.
 
 ## Start From the Template
 

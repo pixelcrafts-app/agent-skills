@@ -12,7 +12,7 @@ origin: ECC
 - "Generate project instructions" → phases 1–3, instructions file only
 - "Update project instructions with current conventions" → read existing first, merge new findings
 
-> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex/Aider, `.cursor/rules/*.mdc` for Cursor, or any local convention the project uses.
+> **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex, `.cursor/rules/*.mdc` for Cursor, or any local convention the project uses.
 
 ## Phase 1: Reconnaissance (parallel)
 

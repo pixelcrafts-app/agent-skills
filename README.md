@@ -2,7 +2,7 @@
 
 Harness-agnostic standards, skills, and rules for AI coding agents — write a standard once, deploy it to every tool.
 
-Works with **Claude Code, Cursor, OpenAI Codex, Gemini CLI, Aider, and Kimi Code CLI.**
+Works with **Claude Code, Cursor, OpenAI Codex, Gemini CLI, and Kimi Code CLI.**
 
 ![version](https://img.shields.io/badge/version-0.17.0-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
@@ -12,7 +12,7 @@ Works with **Claude Code, Cursor, OpenAI Codex, Gemini CLI, Aider, and Kimi Code
 
 ## The Problem
 
-Every AI coding tool wants its standards in a different place and format — Claude reads plugins, Cursor reads `.cursor/rules`, Codex reads `AGENTS.md`, Gemini reads `GEMINI.md`, Aider reads `.aider/conventions.md`, Kimi reads `~/.kimi/skills`. Maintain them separately and they drift.
+Every AI coding tool wants its standards in a different place and format — Claude reads plugins, Cursor reads `.cursor/rules`, Codex reads `AGENTS.md`, Gemini reads `GEMINI.md`, Kimi reads `~/.kimi/skills`. Maintain them separately and they drift.
 
 **agent-skills solves this:** one source of truth (`skills/`), deployed to every harness by one command. Edit a skill once; every tool stays in sync.
 
@@ -23,15 +23,15 @@ Every AI coding tool wants its standards in a different place and format — Cla
 ```
                   skills/<category>/<name>/SKILL.md      ← single source (63 skills · 58 portable + 5 Claude-only)
                                  │
-        ┌───────────┬───────────┼───────────┬───────────┬──────────┐
-     generate     export      export      export      export     install
-        ▼           ▼           ▼           ▼           ▼          ▼
-   .claude-plugin/ .cursor/   AGENTS.md   GEMINI.md   .aider/    ~/.kimi/
-   + plugins/      rules/     (codex)     (gemini)    conv.md     skills/
+        ┌───────────┬───────────┼───────────┬──────────┐
+     generate     export      export      export     install
+        ▼           ▼           ▼           ▼          ▼
+   .claude-plugin/ .cursor/   AGENTS.md   GEMINI.md   ~/.kimi/
+   + plugins/      rules/     (codex)     (gemini)    skills/
    (claude)
 ```
 
-- **Static export** (Cursor, Codex, Gemini, Aider) — strips each `SKILL.md` to its body and writes the harness's rules/context file into your project.
+- **Static export** (Cursor, Codex, Gemini) — strips each `SKILL.md` to its body and writes the harness's rules/context file into your project.
 - **Plugin generate** (Claude) — `scripts/build-claude.sh` builds an installable plugin marketplace from `skills/`.
 - **Install** (Kimi) — `install.sh` builds the Kimi skill set from `skills/` (via `build-kimi.sh`) and copies it into `~/.kimi/skills/`.
 
@@ -55,7 +55,6 @@ One entrypoint deploys to any harness:
 | **Cursor** | `./scripts/deploy.sh cursor ~/my-app [pack]` | `.cursor/rules/*.mdc` |
 | **OpenAI Codex** | `./scripts/deploy.sh codex ~/my-app [pack]` | `AGENTS.md` |
 | **Gemini CLI** | `./scripts/deploy.sh gemini ~/my-app [pack]` | `GEMINI.md` |
-| **Aider** | `./scripts/deploy.sh aider ~/my-app [pack]` | `.aider/conventions.md` |
 | **Kimi Code CLI** | `./scripts/deploy.sh kimi` | `~/.kimi/skills/` |
 
 `pack` is one of `all` (default), `core`, `api`, `web`, `mobile`, `flutter`, `design`. Prefer a specific pack — `all` concatenates every skill into one large file.
@@ -105,7 +104,7 @@ agent-skills/
 │   └── claude/          # Claude-only skills (ship only in Claude plugins)
 ├── harnesses/           # per-harness adapters — machinery only, NO skills
 │   ├── claude/          # plugin manifest templates (skills delivered as plugins)
-│   ├── cursor/  codex/  aider/  gemini/   # export.sh per harness
+│   ├── cursor/  codex/  gemini/   # export.sh per harness
 │   └── kimi/            # install.sh + overrides/ (authored Kimi adaptations)
 ├── scripts/
 │   ├── deploy.sh        # single entrypoint → any harness

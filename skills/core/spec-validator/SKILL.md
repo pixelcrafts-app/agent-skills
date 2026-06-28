@@ -19,7 +19,7 @@ Before any implementation begins. If the project's spec file does not exist or i
 
 Location: the project's spec file (conventionally `<project-state-dir>/spec.md`)
 
-> **Harness note:** `<project-state-dir>` is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex/Aider, or the project root when no agent-state directory exists.
+> **Harness note:** `<project-state-dir>` is harness-specific — e.g. `.claude/` for Claude Code, `.kimi/` for Kimi, `.agent/` for Cursor/Codex, or the project root when no agent-state directory exists.
 
 ```markdown
 # Spec: <goal in one line>
