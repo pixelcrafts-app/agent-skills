@@ -20,11 +20,5 @@
     "autonomous",
     "contracts",
     "honesty"
-  ],
-  "skills": [
-    "./skills/"
-  ],
-  "commands": [
-    "./commands/"
   ]
 }
