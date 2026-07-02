@@ -6,7 +6,7 @@ A *skill* is one Markdown file that hands your agent a real capability — how t
 
 64 skills ready to use. Writing your own is one file.
 
-![version](https://img.shields.io/badge/version-0.17.0-blue) ![license](https://img.shields.io/badge/license-MIT-green)
+![version](https://img.shields.io/badge/version-0.19.0-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
 > Community project. Not affiliated with Anthropic, OpenAI, Google, or any harness vendor.
 

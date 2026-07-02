@@ -6,6 +6,10 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ## Unreleased
 
+---
+
+## [0.19.0] — 2026-07-02
+
 ### Changed
 
 - **`ponytail` renamed to `minimize-code`** and rewritten as a bounded implementation discipline: explicit requirements, safety, correctness, and maintainability come first; minimization applies to diff size, dependencies, files, and abstractions after those constraints are met.
