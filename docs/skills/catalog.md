@@ -70,7 +70,7 @@ Install a pack: `/plugin install <pack>@pixelcrafts` (after `/plugin marketplace
 
 ## core-standards (cross-stack engine — applies to every project)
 
-**Engine & always-on:** work-principles · planning · universal-rules · verification · verify-changes · codebase-index · honesty (always-loaded) · subagent-brief · auth-flows · craft-config · search-first · state-files · codebase-onboarding · architecture-decision-records · docker-patterns · hexagonal-architecture · external-tools (prefer Bash over connectors; validate external output) · ponytail (lazy senior dev mode — YAGNI, stdlib/native first, minimum code).
+**Engine & always-on:** work-principles · planning · universal-rules · verification · verify-changes · codebase-index · honesty (always-loaded) · subagent-brief · auth-flows · craft-config · search-first · state-files · codebase-onboarding · architecture-decision-records · docker-patterns · hexagonal-architecture · external-tools (prefer Bash over connectors; validate external output) · minimize-code (smallest maintainable diff after explicit requirements, safety, and correctness).
 
 **Autonomous pipeline** (single prompt → verified delivery, each phase locked before the next): `spec-validator` → `contracts` → `contract-tests` → `integration` → `challenger` (adversarial review, fresh context).
 

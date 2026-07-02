@@ -4,6 +4,14 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 
 ---
 
+## Unreleased
+
+### Changed
+
+- **`ponytail` renamed to `minimize-code`** and rewritten as a bounded implementation discipline: explicit requirements, safety, correctness, and maintainability come first; minimization applies to diff size, dependencies, files, and abstractions after those constraints are met.
+
+---
+
 ## [0.18.0] — 2026-06-28
 
 Major cleanup + rename. The project is now **agent-skills**: one source of truth (`skills/`) that deploys to Claude, Cursor, Codex, Gemini, and Kimi. Every skill was rewritten to be short and principle-first without losing substance, and the runtime moved to advisory-only across all harnesses.
