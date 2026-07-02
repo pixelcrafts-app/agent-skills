@@ -27,7 +27,7 @@ These rules apply to every file touched in every task. No scope boundary suppres
 
 ## Engineering
 
-§4.1 — No duplicate logic. If the same operation appears twice, extract it.
+§4.1 — No meaningful duplicate logic. Extract only when behavior is shared, stable, and the abstraction is clearer than the duplication. Do not abstract incidental similarity, one-off code, or speculative reuse.
 §4.2 — Names must state intent. Abbreviations are only acceptable if universally understood in the domain.
 §4.3 — Comments explain WHY, not WHAT. Code that needs a comment explaining what it does should be renamed or restructured instead.
 

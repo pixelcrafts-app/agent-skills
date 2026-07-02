@@ -1,7 +1,7 @@
 ---
 name: theme-audit
 description: Verify theme completeness — every themeable value uses tokens, light and dark independently designed, no hardcoded bleed-through, SSR hydration flash prevented
-argument-hint: [optional: scope — "app" | "components" | path]
+argument-hint: [optional: scope — "app" | "components" | path] [--fix]
 ---
 
 Check that design tokens exist first — read `design-tokens.md`, or scan `tailwind.config.*` and `:root` + `.dark` CSS vars. If no tokens found, stop and tell the user to establish tokens first (e.g., by running a token-extraction workflow).
@@ -14,3 +14,5 @@ verify-changes brief:
   fix: yes if --fix, else no
   source: web-standards:theme-audit
 ```
+
+Emit this brief to `verify-changes` and stop; the engine runs the audit. Make edits only when `--fix` is present.

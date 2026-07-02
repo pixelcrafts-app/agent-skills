@@ -15,7 +15,7 @@ outputs: READY or BLOCK verdict with tool-call evidence
 
 ## Two phases (a BLOCK in either blocks READY)
 
-**Phase 1 — Plan compliance.** Read the plan block (no plan → ask what was planned). Per deliverable: **DONE** (run its verification command — the tool result is the evidence) / **MISSED** (command failed or not run) / **PARTIAL**. Fix MISSED/PARTIAL if in scope, re-check; same item fails 3× → surface to user. Only proceed to Phase 2 when all items DONE. **After any fix, restart from Phase 1 item 1.**
+**Phase 1 — Plan or scope compliance.** If a plan block exists, verify every deliverable: **DONE** (run its verification command — the tool result is the evidence) / **MISSED** (command failed or not run) / **PARTIAL**. If no visible plan exists and the change is trivial or small-clear, reconstruct the expected outcome from the newest user request plus changed files and verify that scoped outcome directly. If no plan exists for non-trivial, ambiguous, risky, or multi-file work, ask what was planned before declaring READY. Fix MISSED/PARTIAL if in scope, re-check; same item fails 3× → surface to user. After any fix, restart Phase 1.
 
 **Phase 2 — Rule compliance, in tier order:**
 1. **Always-mandatory** (every file): security — no hardcoded secrets, input validation, no auth-error suppression; + Phase 1.
@@ -23,7 +23,7 @@ outputs: READY or BLOCK verdict with tool-call evidence
 3. **Task-scoped** — only domains whose files (or direct imports) changed. Don't apply a domain no changed file touches.
 4. **Flagged-not-enforced** — undeclared patterns present in changed code → INFO, never blocks.
 
-**Verdict per rule:** PASS (requires `file:line`/grep evidence) · FAIL (file:line + fix) · N/A (requires evidence the domain is absent) · INFO (advisory).
+**Verdict per rule:** PASS (requires `file:line` or command evidence) · FAIL (file:line + fix) · N/A (requires evidence the domain is absent) · INFO (advisory).
 
 ## Universal minimums
 
@@ -33,11 +33,11 @@ outputs: READY or BLOCK verdict with tool-call evidence
 
 ## Report & verdict
 
-Report: config (active stacks/features, disabled rules + reason) · Phase 1 (DONE with command+result, MISSED/PARTIAL with reason) · Phase 2 (FAIL file:line+fix, INFO gaps; no FAIL = all passed with evidence) · known gaps touched.
+Report: config (active stacks/features, disabled rules + reason) · Phase 1 (DONE with command+result, no-plan scoped check, or MISSED/PARTIAL with reason) · Phase 2 (FAIL file:line+fix, INFO gaps; no FAIL = all passed with evidence) · known gaps touched.
 
-- **READY** — all plan items DONE, zero FAILs, zero PARTIALs
+- **READY** — all plan items or no-plan scoped checks DONE, zero FAILs, zero PARTIALs
 - **BLOCK** — any MISSED/PARTIAL or any FAIL, or a universal minimum asserted without tool evidence
 
 ## Commands
 
-Plan deliverable commands · manifest type-check/lint · `grep -R "secret\|password\|token" src/` · `grep -n "TODO\|FIXME\|HACK" <files>`.
+Plan deliverable commands · manifest type-check/lint · `rg -n "secret|password|token" <changed-or-source-paths>` · `rg -n "TODO|FIXME|HACK" <changed-files>`.

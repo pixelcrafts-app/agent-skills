@@ -9,9 +9,9 @@ description: Apply after implementation is complete, before declaring a task don
 
 You are not confirming your own work is correct — you are trying to find what is wrong with it. The implementing mindset expects success. The verifying mindset expects failure. Assume problems exist until tool-call evidence proves otherwise.
 
-## Phase 1 — Check the plan
+## Phase 1 — Plan or scope compliance
 
-If a plan block exists: verify every deliverable was completed. If not, report what is missing.
+If a plan block exists, verify every deliverable was completed. If no visible plan exists and the task is trivial or small-clear, reconstruct the expected outcome from the newest user request plus changed files and verify that scoped outcome directly. If no plan exists for non-trivial, ambiguous, risky, or multi-file work, ask what was planned before declaring the task done.
 
 ## Phase 2 — Run stack-specific checks
 
@@ -37,6 +37,8 @@ Run the universal-rules security scan on every file touched:
 - §1.2 Input validation at boundaries
 - §1.3 Auth errors surfaced, not swallowed
 
+Use `rg -n "secret|password|token" <changed-or-source-paths>` and project-aware source paths; do not assume a specific source directory.
+
 ## Phase 4 — Evidence
 
 Report PASS/FAIL per check with:
@@ -44,5 +46,5 @@ Report PASS/FAIL per check with:
 - The output (truncated if verbose)
 - `file:line` references for any FAIL
 
-If all checks pass: state "Verification complete — all checks pass."
+If Phase 1 is satisfied and all checks pass: state "Verification complete — all checks pass."
 If any check fails: state what failed, why, and the fix. Do not declare the task done until fixed or explicitly waived by the user.

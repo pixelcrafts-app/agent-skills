@@ -12,6 +12,9 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 - **`search-first`** now follows local-first, dependency-last research: repo and installed capability checks are required before external package research, and new dependencies require a clear correctness, maintenance, security, and complexity payoff.
 - **`planning`** now uses tiered planning so trivial and small clear work stays lightweight while ambiguous, risky, high-cost, or plan-only requests still require confirmation.
 - **`work-principles`** is now isolated as the anti-slop, focus, context, and scope-discipline contract instead of duplicating planning, delegation, and verification mechanics.
+- **`verification` / `verify-changes`** now support scoped checks for no-plan trivial work and use `rg` plus project-aware source paths instead of fixed-directory assumptions.
+- **Audit wrappers** (`pre-ship`, `premium-check`, `theme-audit`, `app-audit`) now hand off explicitly to `verify-changes` and report by default; fixes happen only when requested.
+- **`universal-rules` / `scaffold`** now avoid overbuilding: duplicate extraction is limited to stable shared behavior, and feature READMEs are generated only when the project already uses them or the user asks.
 
 ---
 

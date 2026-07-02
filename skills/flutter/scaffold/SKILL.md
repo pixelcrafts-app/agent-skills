@@ -15,7 +15,7 @@ Before writing any files, read the project-instructions file, any local override
 > **Harness note:** The instructions file name is harness-specific — e.g. `CLAUDE.md` for Claude Code, `AGENTS.md` for Kimi/Cursor/Codex, `.cursor/rules/*.mdc` for Cursor.
 
 - State management (`flutter_riverpod`, `provider`, `flutter_bloc`, `StatefulWidget`)
-- Design-system prefix (grep `class \w+Colors` in `lib/shared/` or `lib/core/`)
+- Design-system prefix (`rg -n "class \\w+Colors"` against existing `lib/shared` or `lib/core` dirs)
 - Folder convention (inspect existing `lib/features/<any>/` for sub-folder naming)
 - Router (`go_router` vs `Navigator.generateRoute`)
 - Persistence and HTTP client packages
@@ -43,7 +43,7 @@ Rules:
 - Detect and match the existing mapper pattern (model-level `fromJson` vs separate mapper class); do not generate both.
 - Omit data_sources/repository layers when neither `--with-api` nor `--with-persistence` is given; scaffold UI-only with a placeholder provider returning mock data.
 - Use detected HTTP client and persistence packages; do not hardcode API paths — leave a `// TODO` placeholder.
-- Generate a `README.md` inside the feature folder documenting data flow and provider names.
+- Generate a feature `README.md` only if the project already uses per-feature READMEs or the user asks for one. Otherwise report data flow and provider names in the final response.
 - Never generate files for layers the app does not use.
 - Keep features reusable: one responsibility per folder, no circular dependencies, shared utilities live outside feature folders.
 

@@ -39,4 +39,4 @@ Report: scope/dimensions/depth, totals (files, PASS/FAIL), **critical failures**
 
 ## Commands
 
-`git status --short` / `git diff --name-status` · manifest type-check/lint · `grep -R "import.*<symbol>" src/` (consumers) · `grep -n "TODO\|FIXME\|secret\|password" <files>` (sweep).
+`git status --short` / `git diff --name-status` · manifest type-check/lint · project-aware import search with `rg -n "<symbol>|from ['\\\"].*<module>" <source-paths>` (consumers) · `rg -n "TODO|FIXME|secret|password" <changed-files>` (sweep).

@@ -4,7 +4,7 @@ description: "Run full Flutter app audit: pre-ship checks, craft quality, screen
 argument-hint: [optional-path] [--fix]
 ---
 
-Run `flutter analyze` first. Stop on any error or warning — fix all analyzer output before proceeding.
+Run `flutter analyze` first. If it fails and `--fix` is absent, report the command and failure, then stop. With `--fix`, fix analyzer output first, rerun analyze, then emit the audit brief.
 
 ```
 verify-changes brief:
@@ -20,3 +20,5 @@ verify-changes brief:
   fix: yes if --fix, else no
   source: flutter-standards:app-audit
 ```
+
+Emit this brief to `verify-changes` and stop; the engine runs the audit.

@@ -17,3 +17,5 @@ verify-changes brief:
     aesthetic: <detected or user-supplied>
     density: <detected or user-supplied>
 ```
+
+Emit this brief to `verify-changes` and stop; the engine runs the audit. Make edits only when `--fix` is present.
