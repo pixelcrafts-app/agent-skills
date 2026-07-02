@@ -1,6 +1,6 @@
 # Skills Catalog
 
-Six plugins ship, 63 skills total. **Auto-invoke standards** load when Claude sees matching work; **`[cmd]`** skills are user-invoked via `/<pack>:<skill>`. Generated from the skill files — keep in sync via `docs-sync`.
+Six plugins ship, 64 skills total. **Auto-invoke standards** load when Claude sees matching work; **`[cmd]`** skills are user-invoked via `/<pack>:<skill>`. Generated from the skill files — keep in sync via `docs-sync`.
 
 Install a pack: `/plugin install <pack>@pixelcrafts` (after `/plugin marketplace add pixelcrafts-app/agent-skills`).
 
@@ -70,7 +70,7 @@ Install a pack: `/plugin install <pack>@pixelcrafts` (after `/plugin marketplace
 
 ## core-standards (cross-stack engine — applies to every project)
 
-**Engine & always-on:** work-principles · planning · universal-rules · verification · verify-changes · codebase-index · honesty (always-loaded) · subagent-brief · auth-flows · craft-config · search-first · state-files · codebase-onboarding · architecture-decision-records · docker-patterns · hexagonal-architecture · external-tools (prefer Bash over connectors; validate external output).
+**Engine & always-on:** work-principles · planning · universal-rules · verification · verify-changes · codebase-index · honesty (always-loaded) · subagent-brief · auth-flows · craft-config · search-first · state-files · codebase-onboarding · architecture-decision-records · docker-patterns · hexagonal-architecture · external-tools (prefer Bash over connectors; validate external output) · ponytail (lazy senior dev mode — YAGNI, stdlib/native first, minimum code).
 
 **Autonomous pipeline** (single prompt → verified delivery, each phase locked before the next): `spec-validator` → `contracts` → `contract-tests` → `integration` → `challenger` (adversarial review, fresh context).
 

@@ -4,7 +4,7 @@
 
 A *skill* is one Markdown file that hands your agent a real capability — how to build a production UI, design an API that holds up, plan before it codes, or check its own work instead of guessing. Drop it in, and the agent just knows how to do that job — your way, every time.
 
-63 skills ready to use. Writing your own is one file.
+64 skills ready to use. Writing your own is one file.
 
 ![version](https://img.shields.io/badge/version-0.17.0-blue) ![license](https://img.shields.io/badge/license-MIT-green)
 
@@ -14,7 +14,7 @@ A *skill* is one Markdown file that hands your agent a real capability — how t
 
 ## What you're actually giving it
 
-Without skills, your agent runs on generic instincts — it builds a screen with no loading state, writes an endpoint with no auth check, and says "done" without running anything. A skill replaces that guesswork with know-how. A few of the 63:
+Without skills, your agent runs on generic instincts — it builds a screen with no loading state, writes an endpoint with no auth check, and says "done" without running anything. A skill replaces that guesswork with know-how. A few of the 64:
 
 - **When it builds UI** — it now handles loading / empty / error / content on every screen, uses your design tokens instead of hardcoded values, and passes contrast.
 - **When it writes an API** — auth on every endpoint, validated input, no leaked secrets, typed errors, cursor pagination.
@@ -45,9 +45,9 @@ A skill is just Markdown, so the same one works across **Claude Code, Cursor, Co
 
 ---
 
-## The skills — 63 of them
+## The skills — 64 of them
 
-Each skill is a focused `SKILL.md` your agent loads when it's relevant. To show what "a skill" actually means — **`code-quality`** (api) alone holds your agent to: every route guarded or explicitly `@Public`, DTOs validated, zero `as any`, no `console.log` in feature code, tests for the happy path *and* auth/validation failures — then a Detect→Check→Suggest pass on rate limiting, idempotency, webhook verification, graceful shutdown, health endpoints, and DB-pool sizing. That's **one** of 63.
+Each skill is a focused `SKILL.md` your agent loads when it's relevant. To show what "a skill" actually means — **`code-quality`** (api) alone holds your agent to: every route guarded or explicitly `@Public`, DTOs validated, zero `as any`, no `console.log` in feature code, tests for the happy path *and* auth/validation failures — then a Detect→Check→Suggest pass on rate limiting, idempotency, webhook verification, graceful shutdown, health endpoints, and DB-pool sizing. That's **one** of 64.
 
 ### web (13) — Next.js + Tailwind + shadcn
 - **nextjs** — App Router, Server Components by default, RSC/client boundary pushed deep, structured React Query keys, RHF + Zod, no barrel files, no `any`/`as`
@@ -86,7 +86,7 @@ Every skill, with when each fires → **[docs/skills/catalog.md](docs/skills/cat
 Every skill lives once in `skills/`. One command turns it into the format each tool reads — edit a skill, re-run, every tool stays in sync.
 
 ```
-                  skills/<category>/<name>/SKILL.md      ← one source (63 skills)
+                  skills/<category>/<name>/SKILL.md      ← one source (64 skills)
                                  │
         ┌───────────┬───────────┼───────────┬──────────┐
      Claude        Cursor       Codex       Gemini      Kimi
