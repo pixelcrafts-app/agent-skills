@@ -1,73 +1,56 @@
 ---
 name: planning
-description: Apply before writing any code for a feature, fix, migration, or refactor.
+description: Apply before implementation when work is non-trivial, ambiguous, risky, multi-file, or the user asks for a plan. Use tiered planning: skip visible plans for trivial changes, keep small clear changes lightweight, present concise plans for non-trivial work, and wait for confirmation only when scope, risk, cost, or user intent is unsettled.
 triggers:
-  - User asks for a new feature, bug fix, migration, or refactor
-  - Starting work on any task that touches more than one file
-scope: All delivery work
-outputs: A clear plan with deliverables, verification commands, and scope boundary
+  - User asks for a plan, feature, bug fix, migration, or refactor
+  - Starting work that may touch multiple files, contracts, data, or public behavior
+scope: Planning delivery work before implementation
+outputs: A fit-for-scope plan with deliverables, scope boundary, and verification checks when needed
 ---
 
 # Planning
 
-> A plan is a working hypothesis — a confirmed plan is permission to start, not permission to ignore what you discover. **Read before you plan; a plan written before reading the code is a guess with formatting.**
+> Plan enough to stay focused. Do not turn planning into the work.
 
-## Checklist
+## Priority
 
-- [ ] Classify task shape → route (inline vs agents) before reading files
-- [ ] Read relevant files; walk dependencies + consumers
-- [ ] Name unknowns as TBD; list verification as runnable commands
-- [ ] Present the plan and wait for confirmation before coding
+Read enough current context before planning. A plan is a hypothesis: revise it when discovery proves it wrong. Planning must reduce risk or clarify execution; if it adds ceremony without changing the work, keep it internal.
 
-## 1. Route first (choose once — don't start inline then switch)
+## Task Tiers
 
-| Task shape | Route |
-|---|---|
-| 1 file, 1 concern, no consumers · 2–3 files same module | Inline |
-| Research across unknown area | Explore agent → continue inline with findings |
-| 3+ independent files across modules · 2+ independent layers/domains | Parallel agents, one per partition |
-| Research **and** implementation | Research agent first → implement inline |
-| Large/multi-dimension audit | Verification agents per dimension |
-| Touches shared contracts (schema, auth, public API) | Sequential agents — contract layer first |
+| Tier | Use When | Planning Behavior |
+|---|---|---|
+| **Trivial** | One local edit, docs/text tweak, no exported symbols, no contracts, no consumers | No visible plan. Read the target, make the change, verify appropriately. |
+| **Small Clear** | One concern, known files/pattern, low blast radius | Keep an internal plan. Proceed after reading relevant code. |
+| **Non-Trivial** | Multiple files, new behavior, refactor, migration, or shared code | Present a concise visible plan with deliverables, scope boundary, and verification. |
+| **Confirm First** | Ambiguous requirement, destructive action, public API/schema/auth change, external side effect, high cost, or user asked for plan-only | Ask and wait before implementation. |
 
-Default is **not** inline (inline = narrow single-focus only). If using agents, write briefs first and state routing explicitly (`N parallel/sequential — reason; Agent N scope; dependencies`).
+## Discovery
 
-## 2. Discovery from scratch (new session/task, no files read)
+Before a visible plan, read the entry point, direct imports or consumers, and one nearby working example when available. Do not invent file lists from naming alone. Mark unread areas as `TBD` instead of pretending certainty.
 
-Entry point → read it + its direct imports → identify stack from extensions/manifests (don't assume) → read one working example of the same pattern → then plan.
+## Plan Shape
 
-## 3. Planning steps
+For non-trivial work, use this shape:
 
-1. Restate the ask in one sentence; resolve ambiguity.
-2. List per-file changes — only for files you've read; mark unread as TBD.
-3. Walk dependencies; flag high-blast-radius (exported symbol removed/renamed, signature change, DTO/schema field, route path/method).
-4. Name unknowns (TBD) and surface them.
-5. List verification criteria — each checkable by a specific tool call.
-6. Re-confirm the routing decision after reading code.
-7. Present and wait for confirmation.
-
-## 4. Plan block (emit after confirmation, every non-trivial task)
-
-```
-<!-- plan
- Deliverables:
-   D1: <what will exist>   Files: path   Verification: Bash: <type-check/test cmd>
-   D2: <pattern not covered by compiler/tests>   Verification: Grep: '<pattern>' path
- Scope boundary: <explicitly what is NOT in scope>
--->
+```md
+Plan:
+- Deliverables: <specific outcomes>
+- Files/areas: <read files first; TBD for unread areas>
+- Scope boundary: <specific exclusions>
+- Verification: <runnable checks or concrete inspection>
 ```
 
-Every deliverable has a verification field (prefer a Bash command with a binary exit code; Grep/Read only for what no tool covers). Scope boundary names specific exclusions ("everything else" is not a boundary). This block is the contract verification uses — don't restate it in prose.
+Keep plans short. Name decisions and risks; do not narrate obvious steps like "open file" or "edit code" unless they affect risk.
 
-## 5. Trivial-task bypass
+## During Implementation
 
-A single-file change touching no exported symbols/contracts may skip the plan block **only after** grep proves zero consumers and zero imports of the file. The grep results are the qualification; any hit → full plan applies.
-
-## 6. During implementation
-
-Discover something the plan missed → state it, revise the block, continue. A step is harder than expected → say so before sinking more time. Complete → run the block's verification commands before reporting done.
+- If discovery changes the plan, state the change and continue when scope/risk is unchanged.
+- If scope, risk, cost, or user-visible behavior changes, checkpoint before proceeding.
+- Do not expand into adjacent cleanup, refactors, or documentation unless it is required for the planned deliverable.
 
 ## Verdicts
 
-- **READY** — plan confirmed, route chosen, deliverables + verifications defined
-- **BLOCK** — ambiguity/unknowns/scope unsettled; don't start coding
+- **PROCEED** — plan tier fits the task and no confirmation gate is active
+- **CONFIRM** — ambiguity, risk, cost, or user intent requires waiting
+- **REPLAN** — discovery invalidated the plan or scope boundary

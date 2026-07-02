@@ -1,18 +1,18 @@
 ---
 name: search-first
-description: Research-before-coding discipline. Search for existing tools, libraries, servers, and patterns before writing custom code.
+description: Apply before creating utilities, helpers, abstractions, integrations, dependencies, or non-trivial features that may already exist. Search local code and installed capabilities first; use external package or OSS research only when it can materially reduce complexity or risk.
 triggers:
   - "Add X functionality" and code is about to be written
   - Adding a dependency or integration
   - Creating a new utility, helper, or abstraction
   - Starting a feature that likely has existing solutions
-scope: All code that could reuse an existing solution
-outputs: Adopt, extend, compose, or build decision with evidence
+scope: Code that could reuse local code, stdlib/native features, installed dependencies, tools, or a justified new dependency
+outputs: Reuse, use installed, build local, or adopt dependency decision with evidence
 ---
 
 # Search First
 
-> Custom code is the last resort. Search first.
+> Reuse first. Build small. Add dependencies last.
 
 ## When to Apply
 
@@ -21,72 +21,64 @@ outputs: Adopt, extend, compose, or build decision with evidence
 - Before creating a new abstraction
 - Whenever a feature likely has existing solutions
 
-## Must-Do Checklist
+## Priority
 
-- [ ] Search the current repo for existing implementations
-- [ ] Search package registries for the exact problem
-- [ ] Search available tool servers / connectors if applicable
-- [ ] Search GitHub / OSS for maintained solutions
-- [ ] Apply the decision matrix before building
+Research must reduce code, risk, or maintenance burden. Do not add a package just because one exists. For small obvious changes, a repo search plus installed-dependency check is enough.
 
-## Rules
+## Search Ladder
 
-### 1. Decision matrix
+1. Search the current repo with `rg` for existing helpers, tests, components, commands, or patterns.
+2. Inspect manifests and imports for already-installed dependencies or framework/native features.
+3. Use stdlib or platform features when they are clear, correct, and already available.
+4. Build local code when the solution is small, readable, and lower-risk than a dependency.
+5. Do external registry/OSS research only for new dependencies, integrations, protocols, parsers, security-sensitive code, complex algorithms, or broadly reusable abstractions.
+6. Add a new dependency only when it clearly beats local code on correctness, maintenance, security, and total complexity.
 
-| Signal | Action |
+## Decision Matrix
+
+| Signal | Decision |
 |---|---|
-| Exact match, well-maintained, permissive license | **Adopt** — install and use directly |
-| Partial match, good foundation | **Extend** — install + thin wrapper |
-| Multiple weak matches | **Compose** — combine 2–3 small packages |
-| Nothing suitable | **Build** — custom, but informed by research |
+| Existing project code fits | **REUSE** — call or adapt it in place |
+| Stdlib, native feature, or installed dependency fits | **USE INSTALLED** — no new dependency |
+| Solution is small and project-specific | **BUILD LOCAL** — keep it boring and tested |
+| New dependency is clearly safer or simpler overall | **ADOPT** — install with version, license, and maintenance rationale |
+| Only multiple weak new packages fit | **BUILD LOCAL** or ask before adding dependency chain |
+| Nothing suitable | **BUILD LOCAL** — informed by patterns found |
 
-### 2. Quick mode — always run first
+## External Research Gate
 
-1. Repo search — search relevant modules/tests; does it exist already?
-2. Package search — registry search for the exact problem
-3. Tool-server search — is there an existing connector for this?
-4. OSS search — maintained open-source before writing net-new code
+Before external package or OSS research, confirm at least one is true:
 
-### 3. Full mode — for non-trivial functionality
+- The user asked to add or compare dependencies.
+- The feature is an integration, protocol, parser, file format, auth/security primitive, or complex algorithm.
+- The implementation would otherwise create a reusable subsystem or substantial custom code.
+- The project already uses a nearby dependency family and extending it may be smaller.
 
-If research requires significant effort, spawn a research subagent with:
+When adopting a dependency, verify maintenance, license, package size or footprint, API stability, security posture, and fit with the existing stack.
 
-- Description of the problem
-- Language/framework
-- Constraints
-- Search targets: registries, tool servers, OSS
-- Required output: structured comparison with recommendation
+## Anti-Patterns
 
-### 4. Search shortcuts
+- Searching package registries before checking the repo.
+- Installing a library for a small helper the project can own safely.
+- Combining multiple new packages to avoid writing a small clear function.
+- Creating a wrapper so thick that the dependency no longer reduces code.
+- Rebuilding protocol, crypto, parsing, or file-format logic without checking proven options.
 
-| Category | Top candidates |
-|---|---|
-| Linting | `eslint`, `ruff`, `markdownlint` |
-| Formatting | `prettier`, `black`, `gofmt` |
-| Testing | `jest`, `vitest`, `pytest`, `go test` |
-| Pre-commit | `husky`, `lint-staged` |
-| HTTP clients | `ky`/`got` (Node), `httpx` (Python) |
-| Validation | `zod` (TS), `pydantic` (Python) |
-| Markdown | `remark`, `unified`, `markdown-it` |
-| Image | `sharp`, `imagemin` |
-| Document parsing | `unstructured`, `pdfplumber`, `mammoth` |
+## Output
 
-### 5. Anti-patterns
+For implementation: mention only the decision that affected the diff, such as reused existing helper, used installed dependency, built local because it was smaller, or adopted a dependency with rationale.
 
-- Writing a utility without checking if one exists in the repo first
-- Skipping tool-server checks when the capability is a natural fit
-- Wrapping a library so heavily it loses its benefits
-- Installing a large package for a 5-line problem
+For review: report missed reuse or unnecessary dependency findings with `file:line` evidence and the smaller replacement.
 
 ## Verification Commands
 
-- `grep -R "<functionality>" src/` — repo search
-- Registry search command appropriate to the stack
-- `ls` or manifest inspection to confirm dependency is installed
+- `rg "<concept|function|type>" .` — repo search
+- Inspect the project manifest and lockfile for installed dependencies
+- Use the registry, package manager, or official docs only when the external research gate is met
 
 ## Verdicts
 
-- **ADOPT** — use an existing solution directly
-- **EXTEND** — use an existing solution with a thin wrapper
-- **COMPOSE** — combine existing solutions
-- **BUILD** — no suitable existing solution; build custom code
+- **REUSE** — use existing project code
+- **USE INSTALLED** — use stdlib, native feature, or installed dependency
+- **BUILD LOCAL** — custom code is smaller and lower-risk
+- **ADOPT** — add a dependency with clear payoff

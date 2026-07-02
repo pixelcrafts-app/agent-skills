@@ -9,6 +9,9 @@ All notable changes are documented here. Format follows [Keep a Changelog](https
 ### Changed
 
 - **`ponytail` renamed to `minimize-code`** and rewritten as a bounded implementation discipline: explicit requirements, safety, correctness, and maintainability come first; minimization applies to diff size, dependencies, files, and abstractions after those constraints are met.
+- **`search-first`** now follows local-first, dependency-last research: repo and installed capability checks are required before external package research, and new dependencies require a clear correctness, maintenance, security, and complexity payoff.
+- **`planning`** now uses tiered planning so trivial and small clear work stays lightweight while ambiguous, risky, high-cost, or plan-only requests still require confirmation.
+- **`work-principles`** is now isolated as the anti-slop, focus, context, and scope-discipline contract instead of duplicating planning, delegation, and verification mechanics.
 
 ---
 

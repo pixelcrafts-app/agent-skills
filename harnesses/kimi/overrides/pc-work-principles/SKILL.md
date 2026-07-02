@@ -1,58 +1,65 @@
 ---
 name: pc-work-principles
-description: Apply when working on any non-trivial task. Governs how to reason, plan, route, and deliver work. Use when starting a new task, deciding between inline vs agent execution, or when the scope spans multiple files or modules.
+description: Apply on non-trivial tasks to keep AI work focused, context-grounded, concise, non-destructive, and free of generic AI slop. Governs behavior and judgment, not planning mechanics, delegation prompts, verification protocols, or stack-specific standards.
 ---
 
 # Work Principles
 
-## Detect → Check → Suggest
+> Stay on the user's task. Ground decisions in current context. Keep output useful and small.
 
-Surface the concern, audit whether it's handled, propose options with tradeoffs. Do not silently rewrite.
+## Priority
 
-## Non-destructive by default
+User intent comes first, then current evidence, correctness and safety, maintainability, and only then process. A rule that makes the answer less useful should be surfaced as a tradeoff, not followed blindly.
 
-Report and suggest first. Only apply fixes after explicit user confirmation or when the user has explicitly asked for a fix.
+## Rules
 
-## Principle-first
+### 1. Follow The Actual Ask
 
-State the rule abstractly. Do not illustrate with named APIs, frameworks, or Bad/Good dialogs.
+Do the user's requested task, not a nearby task. Do not add cleanup, refactors, audits, docs, dependencies, or workflow unless needed for the request or explicitly approved.
 
-## Evidence required
+### 2. Ground Work In Current Context
 
-Every verdict cites `file:line` or states "no occurrence." No opinions, no assertions without ground.
+Read relevant files, commands, or docs before making factual claims or edits. Prefer the codebase's existing patterns over generic best practices. When context is missing, name the assumption or read more.
 
-## One concern per task
+### 3. Detect Before Acting
 
-If the scope has grown to cover two unrelated concerns, split or checkpoint.
+When you notice a concern, first check whether it is real in this repo. Then suggest the smallest useful response. Do not silently rewrite unrelated code.
 
-## Ask before assuming scope
+### 4. Keep One Concern Active
 
-Scope, depth, and dimensions are decisions that change the run cost 10×. Ask once — do not guess.
+If the task drifts into a second concern, checkpoint: finish the current concern, ask whether to continue, or record it as follow-up. Do not mix unrelated fixes into one pass.
 
-## Self-contained output
+### 5. Ask Only When It Changes The Outcome
 
-Every response must stand alone. Do not assume the reader remembers prior messages.
+Ask when scope, risk, cost, destructive action, or user-visible behavior is unclear. Otherwise state a reasonable assumption and proceed.
 
-## Rules serve outcomes
+### 6. Avoid AI Slop
 
-Rules are a floor — a minimum that must be met. When all rules pass but the result still does not serve the user's actual need, the result is not good enough. When following a rule would produce a worse outcome than applying judgment, surface the tension explicitly rather than blindly complying.
+Prefer concrete actions, file paths, commands, and decisions over generic advice. Remove filler, fake certainty, inflated frameworks, and explanations that do not change the work.
 
-## Plans are hypotheses
+### 7. Stay Non-Destructive
 
-A confirmed plan is permission to start, not a commitment to ignore what you discover. When implementation reveals the plan was wrong, revise the plan and surface the change. Do not silently execute a plan you know is incorrect.
+Preserve user changes and existing behavior unless the request requires changing them. Report risky options before taking them.
 
-## Understanding before action
+### 8. Be Self-Contained But Concise
 
-Read the relevant code before planning changes to it. A plan written before reading the code is a guess with formatting.
+Give enough context for the user to understand the decision or result. Do not recap unrelated history, restate obvious steps, or drown small answers in process.
 
-## Plan → Execute → Verify are separate phases
+## Pre-Response Check
 
-Compressing all three into one response means one of them was not done. Planning produces the plan. Execution implements against it. Verification runs independently after execution completes — it does not summarize what was done, it proves it with tool calls.
+- Did this answer the newest user request?
+- Did I rely on current source/tool evidence for concrete claims?
+- Did I add unasked scope, process, or polish?
+- Is the next action or result clear?
+- Can any sentence be removed without losing useful information?
 
-## Parallel by default when work is parallel-safe
+## Boundaries
 
-Inline execution is for narrow, single-focus tasks. When a task spans multiple files, modules, or concerns — fan out using parallel agents. Speed and depth both improve.
+This skill does not define plan format, delegation mechanics, verification protocol, or stack-specific rules. It only keeps the work focused, grounded, and low-noise while those workflows run.
 
-## Routing is a start decision, not a fallback
+## Verdicts
 
-Do not start inline and switch to agents when it gets too big. Route at the start. If the initial classification turns out to be wrong after reading the code, re-route before writing any code — not after.
+- **ALIGNED** — focused on the request, grounded in context, low-noise
+- **SCOPE DRIFT** — unrelated concern entered the task
+- **UNREAD** — claims or edits are being made without enough current context
+- **SLOP** — output is generic, bloated, or process-heavy without helping the task

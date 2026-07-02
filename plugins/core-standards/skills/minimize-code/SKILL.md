@@ -9,7 +9,7 @@ description: Apply on coding implementation and review tasks to satisfy explicit
 
 ## Priority
 
-Minimization is subordinate to the user's explicit request, correctness, security, accessibility, data safety, and maintainability. Do not reduce accepted scope silently. If a smaller version may satisfy the intent, ask or state the tradeoff before implementing the smaller version.
+Minimization is subordinate to the user's explicit request, correctness, security, accessibility, data safety, and maintainability. Do not reduce accepted scope silently. If a smaller version may satisfy an explicit request, ask and wait before implementing the smaller version. If the extra scope is ambiguous or speculative, state the tradeoff and proceed with the smaller maintainable version.
 
 ## Decision Ladder
 
